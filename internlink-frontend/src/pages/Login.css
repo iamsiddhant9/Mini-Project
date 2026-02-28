@@ -1,0 +1,196 @@
+@import url('https://fonts.googleapis.com/css2?family=Mea+Culpa&family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
+
+/* ── Root ── */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+}
+
+.login-page {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── LiquidEther fills entire page ── */
+.liquid-fullscreen {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 0;
+}
+
+/* ── Form sits on top ── */
+.login-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+/* ── Card ── */
+.auth-wrapper {
+  display: flex;
+  width: 90%;
+  max-width: 900px;
+  min-height: 460px;
+  border-radius: 20px;
+  overflow: hidden;
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  background: rgba(13, 20, 36, 0.85);
+  border: 1px solid rgba(99, 179, 237, 0.12);
+  box-shadow:
+    0 0 0 1px rgba(242, 242, 243, 0.08),
+    0 32px 80px rgba(239, 235, 235, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.901);
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.auth-wrapper:hover {
+  transform: scale(1.12);
+  box-shadow:
+    0 0 0 1px rgba(99, 179, 237, 0.22),
+    0 32px 80px rgba(0, 0, 0, 0.7),
+    0 0 60px rgba(59, 130, 246, 0.1);
+}
+
+/* ── Left panel ── */
+.auth-left {
+  flex: 1;
+  background: linear-gradient(160deg, #0f1a2e 0%, #080d1a 100%);
+  border-right: 1px solid rgba(99, 179, 237, 0.1);
+  color: #e2e8f0;
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-left::before {
+  content: '';
+  position: absolute;
+  top: -60px; left: -60px;
+  width: 260px; height: 260px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.auth-left h1 {
+  font-family: "Mea Culpa", cursive;
+  font-weight: 400;
+  font-size: 50px;
+  margin-bottom: 0.75rem;
+  background: linear-gradient(135deg, #fff 40%, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.brand-text {
+  font-family: "Mea Culpa", cursive;
+  font-weight: 400;
+  font-size: xx-large;
+  color: #b8bbc0;
+}
+
+/* ── Right panel ── */
+.auth-right {
+  flex: 1;
+  background: rgba(13, 20, 36, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2.5rem;
+}
+
+/* ── Login card ── */
+.login-card {
+  width: 100%;
+  max-width: 340px;
+}
+
+.login-card h2 {
+  text-align: center;
+  margin-bottom: 1.8rem;
+  font-size: 28px;
+  font-weight: 800;
+  font-family: 'Syne', sans-serif;
+  color: #f0f4ff;
+  letter-spacing: -0.3px;
+}
+
+.login-card label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #64748b;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.login-card input {
+  width: 100%;
+  padding: 11px 14px;
+  margin-bottom: 1rem;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'DM Sans', sans-serif;
+  background: #111c30;
+  border: 1px solid rgba(99, 179, 237, 0.12);
+  border-radius: 10px;
+  color: #e2e8f0;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.login-card input::placeholder { color: #3d4a6b; }
+
+.login-card input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+/* ── Button ── */
+.login-card button[type="submit"] {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #3b82f6, #06b6d4);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.2s;
+  margin-top: 4px;
+}
+
+.login-card button[type="submit"]:hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .auth-wrapper {
+    flex-direction: column;
+    max-width: 400px;
+    min-height: auto;
+  }
+  .auth-wrapper:hover { transform: none; }
+  .auth-left  { display: none; }
+  .auth-right { padding: 2rem; }
+}
