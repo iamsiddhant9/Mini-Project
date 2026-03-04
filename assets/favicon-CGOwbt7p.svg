@@ -1,0 +1,36 @@
+<svg width="32" height="32" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0d1b2e"/>
+      <stop offset="100%" stop-color="#0a1220"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#d4a843"/>
+      <stop offset="50%" stop-color="#f0c96a"/>
+      <stop offset="100%" stop-color="#c49432"/>
+    </linearGradient>
+    <linearGradient id="silver" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#e2e8f0"/>
+      <stop offset="100%" stop-color="#94a3b8" stop-opacity="0.9"/>
+    </linearGradient>
+    <linearGradient id="border" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#d4a843" stop-opacity="0.6"/>
+      <stop offset="40%" stop-color="#1e3a5f" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#d4a843" stop-opacity="0.3"/>
+    </linearGradient>
+  </defs>
+  <rect width="48" height="48" rx="11" fill="url(#bg)"/>
+  <rect x="0.75" y="0.75" width="46.5" height="46.5" rx="10.5" fill="none" stroke="url(#border)" stroke-width="1"/>
+  <!-- Left ring: silver -->
+  <rect x="9" y="12" width="16" height="18" rx="4" fill="none" stroke="url(#silver)" stroke-width="2.4"/>
+  <rect x="21" y="16.5" width="5" height="9" fill="url(#bg)"/>
+  <!-- Right ring: gold -->
+  <rect x="23" y="18" width="16" height="18" rx="4" fill="none" stroke="url(#gold)" stroke-width="2.4"/>
+  <rect x="22" y="22.5" width="5" height="9" fill="url(#bg)"/>
+  <rect x="23" y="22.2" width="2.5" height="8.6" fill="url(#bg)"/>
+  <!-- Gold pip -->
+  <circle cx="38" cy="10" r="2.2" fill="url(#gold)"/>
+  <circle cx="38" cy="10" r="3.8" fill="none" stroke="#d4a843" stroke-width="0.6" stroke-opacity="0.4"/>
+  <!-- Base line -->
+  <line x1="9" y1="40" x2="39" y2="40" stroke="url(#gold)" stroke-width="0.8" stroke-opacity="0.3"/>
+</svg>
