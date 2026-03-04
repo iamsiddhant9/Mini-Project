@@ -4,7 +4,6 @@ import { internships } from "../data/mock";
 import { Internship } from "../types";
 import ScrollStack, { ScrollStackItem } from '../components/ScrollStack';
 import './Recommendations.css';
-import BackButton from '../components/BackButton';
 
 // ── Components ──
 
@@ -49,7 +48,6 @@ export default function Recommendations(): ReactElement {
 
   return (
     <div className="recommendations-page">
-      <BackButton />
       {/* ── Header ── */}
       <div className="rec-header">
         <div>

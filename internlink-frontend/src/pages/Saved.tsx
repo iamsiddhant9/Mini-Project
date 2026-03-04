@@ -1,7 +1,6 @@
 // src/pages/Saved.tsx
 import { useState, ReactElement } from "react";
 import "./Saved.css";
-import BackButton from '../components/BackButton';
 
 interface SavedInternship {
   id: string;
@@ -62,7 +61,6 @@ export default function Saved(): ReactElement {
 
   return (
     <>
-      <BackButton />
       <div className="saved-header">
         <div>
           <h1>Saved Internships</h1>

@@ -3,7 +3,6 @@ import { useState, ReactElement } from "react";
 import { applications } from "../data/mock";
 import { Application } from "../types";
 import './Applications.css';
-import BackButton from '../components/BackButton';
 
 const COLUMNS: { status: Application["status"]; label: string; color: string; bg: string; icon: string }[] = [
   { status: "Applied",   label: "Applied",   color: "var(--accent)",  bg: "rgba(59,130,246,0.08)",  icon: "📨" },
@@ -37,7 +36,6 @@ export default function Applications(): ReactElement {
 
   return (
     <>
-      <BackButton />
       <div className="apps-header">
         <h1>My Applications </h1>
         <p>Track every application across all stages</p>

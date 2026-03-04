@@ -2,7 +2,6 @@
 import { ReactElement } from "react";
 import { skills } from "../data/mock";
 import './SkillAnalysis.css';
-import BackButton from '../components/BackButton';
 
 
 
@@ -25,7 +24,6 @@ export default function SkillAnalysis(): ReactElement {
   return (
     <>
    
-      <BackButton />
       <div className="skills-header">
         <h1>Skill Analysis </h1>
         <p>Understand your strengths, gaps and what to improve next</p>

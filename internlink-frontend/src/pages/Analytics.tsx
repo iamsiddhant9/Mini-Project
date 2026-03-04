@@ -1,7 +1,6 @@
 // src/pages/Analytics.tsx
 import { ReactElement } from "react";
 import './Analytics.css';
-import BackButton from '../components/BackButton';
 
   
 
@@ -53,7 +52,6 @@ export default function Analytics(): ReactElement {
   return (
     <>
      
-      <BackButton />
       <div className="analytics-header">
         <h1>Analytics 📊</h1>
         <p>Visualize your internship search performance over time</p>

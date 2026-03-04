@@ -7,7 +7,7 @@ export const user: User = {
   year: "2nd Year",
   branch: "Comps",
   bio: "Passionate about ML and building scalable systems. Currently exploring opportunities in AI research and backend engineering.",
-  email: "siddhant@example.com",
+  email: "siddhantsonarkar9@gmail.com",
   github: "github.com/siddhant",
   linkedin: "linkedin.com/in/siddhant",
   portfolio: "siddhant.dev",

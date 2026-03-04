@@ -1,7 +1,6 @@
 // src/pages/Settings.tsx
 import { useState, ReactElement } from "react";
 import "./Settings.css";
-import BackButton from '../components/BackButton';
 
 interface ToggleProps {
   checked: boolean;
@@ -72,7 +71,6 @@ export default function Settings(): ReactElement {
 
   return (
     <>
-      <BackButton />
       <div className="settings-header">
         <div>
           <h1>Settings</h1>

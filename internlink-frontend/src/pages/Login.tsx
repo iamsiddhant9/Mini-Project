@@ -1,24 +1,36 @@
-// Login.tsx
 import AuthLeft from "../components/AuthLeft.tsx";
 import Squares from "../components/Squares.tsx";
 import "./Login.css";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
-  const [email, setEmail] = useState<string>("");
+  const [email, setEmail]       = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const navigate = useNavigate();
+  const [error, setError]       = useState<string>("");
+  const [loading, setLoading]   = useState<boolean>(false);
+  const { login }               = useAuth();
+  const navigate                = useNavigate();
 
-  const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    localStorage.setItem("user", JSON.stringify({ email }));
-    navigate("/dashboard");
-  };
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  setError("");
+  setLoading(true);
+  try {
+    const role = await login(email, password);
+    if (role === "admin")     navigate("/admin");
+    else if (role === "recruiter") navigate("/recruiter");
+    else navigate("/dashboard");
+  } catch (err: any) {
+    setError(err.message || "Invalid email or password");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="login-page">
-      {/* Background Layer */}
       <div className="liquid-fullscreen">
         <Squares
           speed={0.5}
@@ -29,7 +41,6 @@ export default function Login() {
         />
       </div>
 
-      {/* UI Overlay Layer */}
       <div className="login-overlay">
         <div className="auth-wrapper">
 
@@ -61,8 +72,26 @@ export default function Login() {
                   required
                 />
 
-                <button type="submit">Login</button>
+                {error && (
+                  <p style={{ color: "#ef4444", fontSize: "14px", margin: "4px 0 8px" }}>
+                    {error}
+                  </p>
+                )}
+
+                <button type="submit" disabled={loading}>
+                  {loading ? "Logging in..." : "Login"}
+                </button>
               </form>
+
+              <p style={{ marginTop: "16px", fontSize: "14px", color: "#94a3b8" }}>
+                Don't have an account?{" "}
+                <span
+                  onClick={() => navigate("/register")}
+                  style={{ color: "#5227FF", cursor: "pointer" }}
+                >
+                  Register
+                </span>
+              </p>
             </div>
           </div>
 

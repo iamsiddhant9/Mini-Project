@@ -1,38 +1,67 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Register from "./pages/Register.tsx"
-import Login from "./pages/Login.tsx"
-import Dashboard from "./pages/Dashboard.tsx";
-import Recommendations from "./pages/Recommendations.tsx";
-import ResumeBuilder from "./pages/ResumeBuilder.tsx";
-import Analytics from "./pages/Analytics.tsx";
-import Explore from "./pages/Explore.tsx";
-import Applications from "./pages/Applications.tsx";
-import Leaderboard from "./pages/Leaderboard.tsx";
-import SkillAnalysis from "./pages/SkillAnalysis.tsx";
-import Profile from "./pages/Profile.tsx";
-import Settings from "./pages/Settings.tsx";
-import Saved from "./pages/Saved.tsx";
+import DashboardLayout    from "./pages/DashboardLayout";
+import ProtectedRoute     from "./components/ProtectedRoute";
+import PublicRoute        from "./components/PublicRoute";
+
+import Login              from "./pages/Login";
+import Register           from "./pages/Register";
+import Dashboard          from "./pages/Dashboard";
+import Recommendations    from "./pages/Recommendations";
+import ResumeBuilder      from "./pages/ResumeBuilder";
+import Analytics          from "./pages/Analytics";
+import Explore            from "./pages/Explore";
+import Applications       from "./pages/Applications";
+import Hackathons         from "./pages/Hackathons";
+import SkillAnalysis      from "./pages/SkillAnalysis";
+import Profile            from "./pages/Profile";
+import Settings           from "./pages/Settings";
+import Saved              from "./pages/Saved";
+import RecruiterDashboard from "./pages/RecruiterDashboard";
+import AdminDashboard     from "./pages/AdminDashboard";
 
 function App() {
   return (
-        
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={<Dashboard />}/>
-        <Route path="/recommendations" element={<Recommendations/>}/>
-        <Route path="/resumeBuilder" element={<ResumeBuilder/>} />
-        <Route path="/analytics" element={<Analytics/>}/>
-        <Route path="/explore" element={<Explore/>}/>
-        <Route path="/applications" element={<Applications/>}/>
-        <Route path="/leaderboard" element={<Leaderboard/>}/>
-        <Route path="/skillAnalysis" element={<SkillAnalysis/>}/>
-        <Route path="/profile" element={<Profile/>} />
-        <Route path="/settings" element={<Settings/>}/>
-        <Route path="/saved" element={<Saved/>}/>
-         <Route path="/" element={<Dashboard />}/>
-         
+
+        {/* ── Public only (redirect if logged in) ── */}
+        <Route path="/login"    element={<PublicRoute><Login /></PublicRoute>} />
+        <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+
+        {/* ── Recruiter only ── */}
+        <Route path="/recruiter" element={
+          <ProtectedRoute allowedRoles={["recruiter"]}>
+            <RecruiterDashboard />
+          </ProtectedRoute>
+        } />
+
+        {/* ── Admin only ── */}
+        <Route path="/admin" element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <AdminDashboard />
+          </ProtectedRoute>
+        } />
+
+        {/* ── Student routes ── */}
+        <Route element={
+          <ProtectedRoute allowedRoles={["student"]}>
+            <DashboardLayout />
+          </ProtectedRoute>
+        }>
+          <Route path="/"                element={<Dashboard />} />
+          <Route path="/dashboard"       element={<Dashboard />} />
+          <Route path="/recommendations" element={<Recommendations />} />
+          <Route path="/explore"         element={<Explore />} />
+          <Route path="/applications"    element={<Applications />} />
+          <Route path="/profile"         element={<Profile />} />
+          <Route path="/skillAnalysis"   element={<SkillAnalysis />} />
+          <Route path="/saved"           element={<Saved />} />
+          <Route path="/resumeBuilder"   element={<ResumeBuilder />} />
+          <Route path="/analytics"       element={<Analytics />} />
+          <Route path="/hackathons"      element={<Hackathons />} />
+          <Route path="/settings"        element={<Settings />} />
+        </Route>
+
       </Routes>
     </BrowserRouter>
   );

@@ -2,7 +2,6 @@
 import { ReactElement } from "react";
 import { leaderboard } from "../data/mock";
 import './Leaderboard.css';
-import BackButton from '../components/BackButton';
 
 
 export default function Leaderboard(): ReactElement {
@@ -16,7 +15,6 @@ export default function Leaderboard(): ReactElement {
   return (
     <>
      
-      <BackButton />
       <div className="lb-header">
         <h1>Leaderboard 🏆</h1>
         <p>See how you rank among your peers in internship applications</p>

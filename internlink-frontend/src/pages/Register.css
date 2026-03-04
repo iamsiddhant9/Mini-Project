@@ -49,7 +49,7 @@
 }
 
 .auth-wrapper:hover {
-  transform: scale(1.12);
+  transform: scale(1.02);
   box-shadow:
     0 0 0 1px rgba(230, 232, 233, 0.22),
     0 32px 40px rgba(232, 228, 228, 0.7),
@@ -241,7 +241,90 @@
   width: auto;
   padding: 0;
 }
+/* ── Role Toggle ── */
+.role-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  padding: 4px;
+}
 
+.role-toggle button {
+  flex: 1;
+  padding: 8px 0;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  transition: all 0.2s;
+  width: auto;
+  margin-top: 0;
+}
+
+/* ── Select dropdown ── */
+.login-card select {
+  width: 100%;
+  padding: 10px 14px;
+  margin-bottom: 0.85rem;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'DM Sans', sans-serif;
+  background: #111c30;
+  border: 1px solid rgba(99, 179, 237, 0.12);
+  border-radius: 10px;
+  color: #e2e8f0;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+  appearance: none;
+  cursor: pointer;
+}
+
+.login-card select:focus {
+ border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.login-card select option {
+  background: #111c30;
+  color: #e2e8f0;
+}
+
+/* ── Two column row ── */
+.login-card .two-col {
+  display: flex;
+  gap: 10px;
+}
+
+.login-card .two-col > div {
+  flex: 1;
+}
+
+/* ── Recruiter warning ── */
+.recruiter-warning {
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  color: #fbbf24;
+  font-family: 'DM Sans', sans-serif;
+  line-height: 1.5;
+}
+
+/* ── Register right panel scrollable ── */
+.register-page-right {
+  overflow-y: auto;
+  max-height: 100vh;
+  align-items: flex-start;
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
 /* ── Error ── */
 .skill-error {
   color: #f43f5e;

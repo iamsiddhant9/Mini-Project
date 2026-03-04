@@ -2,7 +2,6 @@
 import { useState, ReactElement } from "react";
 import { user, skills } from "../data/mock";
 import './Profile.css';
-import BackButton from '../components/BackButton';
 
 
 export default function Profile(): ReactElement {
@@ -20,7 +19,6 @@ export default function Profile(): ReactElement {
   return (
     <>
    
-      <BackButton />
       <div className="profile-header">
         <h1>My Profile </h1>
         <p>Manage your personal info, links and profile strength</p>

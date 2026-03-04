@@ -1,7 +1,6 @@
 // src/pages/ResumeBuilder.tsx
 import { useState, ReactElement } from "react";
 import './ResumeBuilder.css';
-import BackButton from '../components/BackButton';
 
 interface Entry { id: number; title: string; sub: string; date: string; desc: string; }
 
@@ -30,7 +29,6 @@ export default function ResumeBuilder(): ReactElement {
   return (
     <>
       
-      <BackButton />
       <div className="resume-header">
         <h1>Resume Builder 📄</h1>
         <p>Build and export your resume section by section</p>
