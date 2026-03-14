@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { ModeToggle } from "../components/ModeToggle";
 
-const BASE_URL = "http://localhost:8000/api";
+const BASE_URL = (import.meta.env.VITE_API_URL || "http://localhost:8000") + "/api";
 const token = () => localStorage.getItem("access_token");
 const apiFetch = (url: string) =>
   fetch(`${BASE_URL}${url}`, { headers: { Authorization: `Bearer ${token()}` } }).then(r => r.json());
