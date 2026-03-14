@@ -1,7 +1,10 @@
 // src/components/Layout/Sidebar.tsx
 import { ReactElement } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { navGroups, user } from "../../data/mock";
+import { navGroups } from "../../data/mock";
+import { useAuth } from "../../context/AuthContext";
+import { Link2, LogOut } from "lucide-react";
+import { ModeToggle } from "../ModeToggle";
 
 const sidebarCSS = `
   .sidebar {
@@ -60,13 +63,21 @@ const sidebarCSS = `
 export default function Sidebar(): ReactElement {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, logout } = useAuth();
+
+  const initials = (() => {
+    if (!user?.name) return "??";
+    const parts = user.name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0][0].toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  })();
 
   return (
     <>
       <style>{sidebarCSS}</style>
       <aside className="sidebar">
-        <div className="logo" onClick={() => navigate("/")}>
-          <div className="logo-icon">🔗</div>
+        <div className="logo" onClick={() => navigate("/dashboard")}>
+          <div className="logo-icon"><Link2 size={18} /></div>
           <span className="logo-text">InternLink</span>
         </div>
 
@@ -95,13 +106,20 @@ export default function Sidebar(): ReactElement {
         ))}
 
         <div className="sidebar-bottom">
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 4px 8px" }}>
+            <ModeToggle />
+          </div>
           <div className="user-card" onClick={() => navigate("/profile")}>
-            <div className="avatar" style={{ width: 34, height: 34, fontSize: 13 }}>{user.initials}</div>
+            <div className="avatar" style={{ width: 34, height: 34, fontSize: 13 }}>{initials}</div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div className="user-name">{user.name}</div>
-              <div className="user-role">{user.branch}, {user.year}</div>
+              <div className="user-name">{user?.name ?? "..."}</div>
+              <div className="user-role">{user?.branch ?? ""}{user?.year ? `, ${user.year}` : ""}</div>
             </div>
-            <span style={{ color: "var(--muted)", fontSize: 16 }}>⋯</span>
+            <span
+              style={{ color: "var(--muted)", fontSize: 16, cursor: "pointer", display: "flex" }}
+              title="Logout"
+              onClick={(e) => { e.stopPropagation(); logout(); }}
+            ><LogOut size={16} /></span>
           </div>
         </div>
       </aside>

@@ -1,24 +1,60 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import './AdminDashboard.css';
-import { LayoutDashboard, Clock, Users, Briefcase, LogOut, GraduationCap, Building2, AlertCircle, CheckCircle, Send, Trophy } from "lucide-react";
+import { LayoutDashboard, Clock, Users, Briefcase, LogOut, GraduationCap, Building2, AlertCircle, CheckCircle, Send, RefreshCw } from "lucide-react";
+import { getToken, getRefreshToken, setTokens, clearTokens } from "../services/api";
+
 const BASE_URL = "http://localhost:8000/api";
-const token = () => localStorage.getItem("access_token");
+
+async function request(url: string, options: RequestInit = {}) {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${getToken()}`,
+    ...(options.headers as Record<string, string>),
+  };
+  let res = await fetch(`${BASE_URL}${url}`, { ...options, headers });
+  if (res.status === 401) {
+    const refresh = getRefreshToken();
+    if (refresh) {
+      const r = await fetch(`${BASE_URL}/token/refresh/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh }),
+      });
+      if (r.ok) {
+        const data = await r.json();
+        setTokens(data.access, refresh);
+        headers.Authorization = `Bearer ${data.access}`;
+        res = await fetch(`${BASE_URL}${url}`, { ...options, headers });
+      } else {
+        clearTokens();
+        window.location.href = "/login";
+        return;
+      }
+    }
+  }
+  return res.json();
+}
 
 const api = {
-  get:   (url: string) => fetch(`${BASE_URL}${url}`, { headers: { Authorization: `Bearer ${token()}` } }).then(r => r.json()),
-  patch: (url: string, data: any) => fetch(`${BASE_URL}${url}`, { method: "PATCH", headers: { Authorization: `Bearer ${token()}`, "Content-Type": "application/json" }, body: JSON.stringify(data) }).then(r => r.json()),
+  get:    (url: string)            => request(url),
+  patch:  (url: string, data: any) => request(url, { method: "PATCH",  body: JSON.stringify(data) }),
+  post:   (url: string, data: any) => request(url, { method: "POST",   body: JSON.stringify(data) }),
+  delete: (url: string)            => request(url, { method: "DELETE" }),
 };
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
-  const [tab, setTab]         = useState<"overview"|"users"|"recruiters"|"internships">("overview");
-  const [stats, setStats]     = useState<any>(null);
-  const [users, setUsers]     = useState<any[]>([]);
-  const [pending, setPending] = useState<any[]>([]);
+  const [tab, setTab]                 = useState<"overview"|"users"|"recruiters"|"internships">("overview");
+  const [stats, setStats]             = useState<any>(null);
+  const [users, setUsers]             = useState<any[]>([]);
+  const [pending, setPending]         = useState<any[]>([]);
   const [internships, setInternships] = useState<any[]>([]);
-  const [search, setSearch]   = useState("");
-  const [roleFilter, setRoleFilter] = useState("");
+  const [search, setSearch]           = useState("");
+  const [roleFilter, setRoleFilter]   = useState("");
+
+  const [fetching,  setFetching]  = useState(false);
+  const [fetchMsg,  setFetchMsg]  = useState("");
 
   useEffect(() => {
     api.get("/admin-panel/stats/").then(setStats);
@@ -48,16 +84,30 @@ export default function AdminDashboard() {
     api.get(`/admin-panel/users/?${params}`).then(setUsers);
   };
 
+  const fetchJobs = async () => {
+    setFetching(true);
+    setFetchMsg("");
+    const res = await api.post("/jobs/fetch-all/", {});
+    setFetching(false);
+    setFetchMsg(res.message || "Done");
+    api.get("/admin-panel/stats/").then(setStats);
+    setTimeout(() => setFetchMsg(""), 5000);
+  };
+
+
+
   return (
     <div className="admin-page">
 
       {/* Sidebar */}
       <div className="admin-sidebar">
         <div className="admin-sidebar-logo"><LayoutDashboard size={18} /> Admin Panel</div>
-        {[{ key: "overview",    icon: <LayoutDashboard size={15} />, label: "Overview",    badge: pending.length > 0 ? pending.length : null },
-{ key: "recruiters",  icon: <Clock size={15} />,           label: "Pending",     badge: pending.length > 0 ? pending.length : null },
-{ key: "users",       icon: <Users size={15} />,           label: "All Users",   badge: null },
-{ key: "internships", icon: <Briefcase size={15} />,       label: "Internships", badge: null },].map(item => (
+        {[
+          { key: "overview",    icon: <LayoutDashboard size={15} />, label: "Overview",    badge: pending.length > 0 ? pending.length : null },
+          { key: "recruiters",  icon: <Clock size={15} />,           label: "Pending",     badge: pending.length > 0 ? pending.length : null },
+          { key: "users",       icon: <Users size={15} />,           label: "All Users",   badge: null },
+          { key: "internships", icon: <Briefcase size={15} />,       label: "Internships", badge: null },
+        ].map(item => (
           <button key={item.key} onClick={() => setTab(item.key as any)} className={`admin-nav-btn${tab === item.key ? " active" : ""}`}>
             {item.icon} {item.label}
             {item.badge && <span className="admin-nav-badge">{item.badge}</span>}
@@ -69,7 +119,7 @@ export default function AdminDashboard() {
       {/* Main */}
       <div className="admin-main">
         <div className="admin-header">
-          <h1>Hey {user?.name} 👋</h1>
+          <h1>Hey {user?.name}</h1>
           <p>Platform overview and management</p>
         </div>
 
@@ -79,11 +129,10 @@ export default function AdminDashboard() {
             <div className="admin-stats-grid">
               {[
                 { label: "Students",          val: stats?.students           ?? 0, icon: <GraduationCap size={22} />, color: "#3b82f6" },
-{ label: "Recruiters",         val: stats?.recruiters         ?? 0, icon: <Building2 size={22} />,     color: "#f59e0b" },
-{ label: "Pending Approval",   val: stats?.pending_recruiters ?? 0, icon: <Clock size={22} />,         color: "#ef4444" },
-{ label: "Active Internships", val: stats?.active_internships ?? 0, icon: <Briefcase size={22} />,     color: "#10b981" },
-{ label: "Applications",       val: stats?.total_applications ?? 0, icon: <Send size={22} />,          color: "#06b6d4" },
-{ label: "Hackathons",         val: stats?.active_hackathons  ?? 0, icon: <Trophy size={22} />,        color: "#a78bfa" },
+                { label: "Recruiters",         val: stats?.recruiters         ?? 0, icon: <Building2 size={22} />,     color: "#f59e0b" },
+                { label: "Pending Approval",   val: stats?.pending_recruiters ?? 0, icon: <Clock size={22} />,         color: "#ef4444" },
+                { label: "Active Internships", val: stats?.active_internships ?? 0, icon: <Briefcase size={22} />, color: "#10b981" },
+                { label: "Applications",       val: stats?.total_applications ?? 0, icon: <Send size={22} />,     color: "#06b6d4" },
               ].map(s => (
                 <div key={s.label} className="admin-stat-card">
                   <div className="admin-stat-icon">{s.icon}</div>
@@ -95,7 +144,7 @@ export default function AdminDashboard() {
 
             {pending.length > 0 ? (
               <div className="admin-pending-alert">
-                <h3><AlertCircle size={15} style={{ display: "inline", marginRight: 6 }} /> {pending.length} Recruiter{pending.length > 1 ? "s" : ""} Awaiting Approval</h3>
+                <h3><AlertCircle size={15} style={{ display: "inline", marginRight: 6 }} />{pending.length} Recruiter{pending.length > 1 ? "s" : ""} Awaiting Approval</h3>
                 {pending.map(r => (
                   <div key={r.id} className="admin-pending-row">
                     <div>
@@ -112,14 +161,32 @@ export default function AdminDashboard() {
             ) : (
               <div className="admin-all-good"><CheckCircle size={14} style={{ marginRight: 6 }} /> No pending recruiter approvals</div>
             )}
+
+            {/* Fetch Internships */}
+            <div style={{ marginTop: 24 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <button onClick={fetchJobs} disabled={fetching} style={{
+                  padding: "10px 20px", borderRadius: 10, border: "none",
+                  background: fetching ? "rgba(59,130,246,0.2)" : "linear-gradient(135deg,#3b82f6,#06b6d4)",
+                  color: fetching ? "#64748b" : "#fff", cursor: fetching ? "not-allowed" : "pointer",
+                  fontSize: 13, fontWeight: 700, fontFamily: "DM Sans, sans-serif",
+                  display: "flex", alignItems: "center", gap: 8,
+                }}>
+                  <RefreshCw size={14} style={fetching ? { animation: "spin 1s linear infinite" } : {}} />
+                  {fetching ? "Fetching Jobs..." : "Fetch Internships from Adzuna"}
+                </button>
+                {fetchMsg && <span style={{ fontSize: 13, color: "#10b981", display: "flex", alignItems: "center", gap: 4 }}><CheckCircle size={13} /> {fetchMsg}</span>}
+              </div>
+            </div>
           </div>
         )}
+
 
         {/* Pending Recruiters */}
         {tab === "recruiters" && (
           <div>
             <h2 className="admin-section-title">Pending Recruiter Approvals ({pending.length})</h2>
-            {pending.length === 0 && <div className="admin-empty">No pending approvals 🎉</div>}
+            {pending.length === 0 && <div className="admin-empty">No pending approvals</div>}
             {pending.map(r => (
               <div key={r.id} className="admin-card">
                 <div>
@@ -128,8 +195,8 @@ export default function AdminDashboard() {
                   <div className="admin-card-meta">Registered {new Date(r.created_at).toLocaleDateString()}</div>
                 </div>
                 <div style={{ display: "flex", gap: 8 }}>
-                  <button onClick={() => approveRecruiter(r.id, "approve")} className="btn-approve">✅ Approve</button>
-                  <button onClick={() => approveRecruiter(r.id, "reject")}  className="btn-reject">❌ Reject</button>
+                  <button onClick={() => approveRecruiter(r.id, "approve")} className="btn-approve"><CheckCircle size={13} style={{ marginRight: 4 }} /> Approve</button>
+                  <button onClick={() => approveRecruiter(r.id, "reject")}  className="btn-reject"><AlertCircle size={13} style={{ marginRight: 4 }} /> Reject</button>
                 </div>
               </div>
             ))}

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Pencil } from "lucide-react";
 
 
 const text = "Curated internships. Exceptional futures.Built to accelerate your career.Connecting students to internships that match their skills.";
@@ -23,7 +24,7 @@ export default function AuthLeft() {
       <h1 className="brand-title">InternLink..</h1>
       <p className="brand-text">
         {displayText}
-       {!isComplete && <span className="cursor">✍️</span>} 
+       {!isComplete && <span className="cursor"><Pencil size={14} style={{ display: "inline", verticalAlign: "middle" }} /></span>} 
       </p>
     </>
   );

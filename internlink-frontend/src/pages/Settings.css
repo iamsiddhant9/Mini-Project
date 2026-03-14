@@ -191,3 +191,15 @@
 @media (max-width: 900px) {
   .settings-grid { grid-template-columns: 1fr; }
 }
+@media (max-width: 768px) {
+  .settings-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .save-btn { width: 100%; }
+  .field-row { flex-direction: column; }
+  .setting-row { flex-wrap: wrap; gap: 8px; }
+  .danger-row  { flex-wrap: wrap; gap: 8px; }
+  .danger-btn  { margin-left: 0; }
+}
+
+@media (max-width: 480px) {
+  .settings-card { padding: 16px; }
+}

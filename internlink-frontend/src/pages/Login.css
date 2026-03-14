@@ -46,12 +46,21 @@ html, body, #root {
   backdrop-filter: blur(40px);
   -webkit-backdrop-filter: blur(40px);
   background: rgba(13, 20, 36, 0.85);
-  border: 1px solid rgba(99, 179, 237, 0.12);
+  border: 1px solid rgba(99, 179, 237, 0.15);
   box-shadow:
     0 0 0 1px rgba(242, 242, 243, 0.08),
-    0 32px 80px rgba(239, 235, 235, 0.55),
-    inset 0 1px 0 rgba(255, 255, 255, 0.901);
+    0 32px 80px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
   transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+/* ── Light mode card ── */
+:root:not(.dark) .auth-wrapper {
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(99, 179, 237, 0.25);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.04),
+    0 32px 80px rgba(0, 0, 0, 0.12);
 }
 
 .auth-wrapper:hover {
@@ -74,6 +83,10 @@ html, body, #root {
   justify-content: flex-start;
   position: relative;
   overflow: hidden;
+}
+
+:root:not(.dark) .auth-left {
+  background: linear-gradient(160deg, #1e3a5f 0%, #0f2040 100%);
 }
 
 .auth-left::before {
@@ -112,6 +125,10 @@ html, body, #root {
   padding: 2.5rem;
 }
 
+:root:not(.dark) .auth-right {
+  background: rgba(255, 255, 255, 0.6);
+}
+
 /* ── Login card ── */
 .login-card {
   width: 100%;
@@ -127,6 +144,8 @@ html, body, #root {
   color: #f0f4ff;
   letter-spacing: -0.3px;
 }
+
+:root:not(.dark) .login-card h2 { color: #0f1a2e; }
 
 .login-card label {
   display: block;
@@ -154,6 +173,13 @@ html, body, #root {
   transition: border-color 0.2s, box-shadow 0.2s;
   box-sizing: border-box;
 }
+
+:root:not(.dark) .login-card input {
+  background: rgba(241, 245, 249, 0.9);
+  color: #0f1a2e;
+  border-color: rgba(99, 179, 237, 0.3);
+}
+:root:not(.dark) .login-card input::placeholder { color: #94a3b8; }
 
 .login-card input::placeholder { color: #3d4a6b; }
 

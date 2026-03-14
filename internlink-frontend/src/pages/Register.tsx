@@ -1,10 +1,12 @@
 import AuthLeft from "../components/AuthLeft.tsx";
 import Squares from "../components/Squares.tsx";
 import "./Register.css";
-import { useState } from "react";
+import { AlertTriangle } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
+const GOOGLE_CLIENT_ID = "201990083542-bh5213dhvhjqaq6kkiot1rcj15jv0q91.apps.googleusercontent.com";
 const MAX_SKILLS = 5;
 
 export default function Register() {
@@ -19,21 +21,54 @@ export default function Register() {
   const [role, setRole]             = useState<string>("student");
   const [error, setError]           = useState<string>("");
   const [loading, setLoading]       = useState<boolean>(false);
+  const [gLoading, setGLoading]     = useState<boolean>(false);
 
-  const { register } = useAuth();
-  const navigate     = useNavigate();
+  const { register, googleLogin } = useAuth();
+  const navigate                  = useNavigate();
+
+  useEffect(() => {
+    const existing = document.getElementById("gsi-script");
+    if (existing) { initGoogle(); return; }
+    const script = document.createElement("script");
+    script.id = "gsi-script";
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.onload = () => initGoogle();
+    document.body.appendChild(script);
+  }, []);
+
+  const initGoogle = () => {
+    (window as any).google?.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: handleGoogleCallback,
+    });
+    (window as any).google?.accounts.id.renderButton(
+      document.getElementById("google-btn-register"),
+      { theme: "filled_black", size: "large", width: 340, text: "signup_with", shape: "rectangular" }
+    );
+  };
+
+  const handleGoogleCallback = async (response: any) => {
+    setGLoading(true);
+    setError("");
+    try {
+      const role = await googleLogin(response.credential);
+      if (role === "admin")          navigate("/admin");
+      else if (role === "recruiter") navigate("/recruiter");
+      else                           navigate("/dashboard");
+    } catch (err: any) {
+      setError(err.message || "Google sign-up failed");
+    } finally {
+      setGLoading(false);
+    }
+  };
 
   const handleSkillKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && skillInput.trim() !== "") {
       e.preventDefault();
-      if (skills.length >= MAX_SKILLS) {
-        setSkillError(`You can only add ${MAX_SKILLS} skills`);
-        return;
-      }
-      if (!skills.includes(skillInput.trim())) {
-        setSkills([...skills, skillInput.trim()]);
-        setSkillError("");
-      }
+      if (skills.length >= MAX_SKILLS) { setSkillError(`You can only add ${MAX_SKILLS} skills`); return; }
+      if (!skills.includes(skillInput.trim())) { setSkills([...skills, skillInput.trim()]); setSkillError(""); }
       setSkillInput("");
     }
   };
@@ -45,26 +80,13 @@ export default function Register() {
 
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (role === "student" && skills.length === 0) {
-      setSkillError("Please add at least one skill");
-      return;
-    }
+    if (role === "student" && skills.length === 0) { setSkillError("Please add at least one skill"); return; }
     setError("");
     setLoading(true);
     try {
-      await register({
-        name,
-        email,
-        password,
-        university,
-        year: year ? parseInt(year) : undefined,
-        role,
-      });
-      if (role === "recruiter") {
-        navigate("/login");
-      } else {
-        navigate("/dashboard");
-      }
+      await register({ name, email, password, university, year: year ? parseInt(year) : undefined, role });
+      if (role === "recruiter") navigate("/login");
+      else                      navigate("/dashboard");
     } catch (err: any) {
       setError(err.message || "Registration failed");
     } finally {
@@ -77,41 +99,41 @@ export default function Register() {
       <div className="liquid-fullscreen">
         <Squares speed={0.5} squareSize={40} direction="diagonal" borderColor="#271E37" hoverFillColor="#5227FF" />
       </div>
-
       <div className="register-overlay">
         <div className="auth-wrapper">
           <div className="auth-left">
             <div className="brand-block"><AuthLeft /></div>
           </div>
-
           <div className="auth-right register-page-right">
             <div className="login-card register-card">
               <h2>Create Account</h2>
 
-              {/* Role Toggle */}
-              <div style={{ display: "flex", gap: 8, marginBottom: 20, background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: 4 }}>
+              {/* ── Role Toggle ── */}
+              <div style={{ display: "flex", gap: 8, marginBottom: 16, background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: 4 }}>
                 {["student", "recruiter"].map((r) => (
-                  <button
-                    key={r}
-                    type="button"
-                    onClick={() => setRole(r)}
-                    style={{
-                      flex: 1, padding: "8px 0", borderRadius: 8, border: "none",
-                      cursor: "pointer", fontFamily: "inherit", fontWeight: 600, fontSize: 13,
-                      background: role === r ? "linear-gradient(135deg, #3b82f6, #06b6d4)" : "transparent",
-                      color: role === r ? "#fff" : "#94a3b8",
-                      transition: "all 0.2s",
-                    }}
-                  >
-                    {r === "student" ? " Student" : " Recruiter"}
+                  <button key={r} type="button" onClick={() => setRole(r)} style={{
+                    flex: 1, padding: "8px 0", borderRadius: 8, border: "none", cursor: "pointer",
+                    fontFamily: "inherit", fontWeight: 600, fontSize: 13,
+                    background: role === r ? "linear-gradient(135deg, #3b82f6, #06b6d4)" : "transparent",
+                    color: role === r ? "#fff" : "#94a3b8", transition: "all 0.2s",
+                  }}>
+                    {r === "student" ? "Student" : "Recruiter"}
                   </button>
                 ))}
               </div>
 
               {role === "recruiter" && (
-                <div style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.2)", borderRadius: 10, padding: "10px 14px", marginBottom: 16, fontSize: 12, color: "#fbbf24" }}>
-                  ⚠️ Recruiter accounts require admin approval before you can login.
+                <div style={{ background: "rgba(237, 228, 127, 0.04)", border: "1px solid rgba(251,191,36,0.2)", borderRadius: 10, padding: "10px 14px", marginBottom: 16, fontSize: 12, color: "#fff" }}>
+                  <AlertTriangle size={14} style={{ display: "inline", marginRight: 6, verticalAlign: "middle" }} /> Recruiter accounts require admin approval before you can login.
                 </div>
+              )}
+
+              {/* ── Google button (students only) ── */}
+              {role === "student" && (
+        <> <div id="google-btn-register" style={{ width: "100%", marginBottom: 4 }} /> {gLoading && <p style={{ textAlign: "center", fontSize: 12, color: "#808087ff", margin: "4px 0 8px" }}>Signing up with Google…</p>} 
+        <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "12px 0" }}> 
+          <div style={{ flex: 1, height: 1, background: "#fff" }} /> 
+          <span style={{ fontSize: 11, color: "#bfc0c4ff", fontWeight: 600 }}>OR</span> <div style={{ flex: 1, height: 1, background: "#fff" }} /> </div> </>
               )}
 
               <form onSubmit={handleRegister}>
@@ -124,7 +146,6 @@ export default function Register() {
                 <label>Password</label>
                 <input type="password" placeholder="Create password" value={password} onChange={(e) => setPassword(e.target.value)} required />
 
-                {/* Student-only fields */}
                 {role === "student" && (
                   <>
                     <div style={{ display: "flex", gap: 10 }}>
@@ -143,7 +164,6 @@ export default function Register() {
                         </select>
                       </div>
                     </div>
-
                     <label>Skills</label>
                     <div className="skills-input">
                       {skills.map((skill, index) => (
@@ -164,7 +184,6 @@ export default function Register() {
                   </>
                 )}
 
-                {/* Recruiter-only fields */}
                 {role === "recruiter" && (
                   <>
                     <label>Company Name</label>
@@ -172,9 +191,7 @@ export default function Register() {
                   </>
                 )}
 
-                {error && (
-                  <p style={{ color: "#ef4444", fontSize: "14px", margin: "4px 0 8px" }}>{error}</p>
-                )}
+                {error && <p style={{ color: "#ef4444", fontSize: "14px", margin: "4px 0 8px" }}>{error}</p>}
 
                 <button type="submit" disabled={loading}>
                   {loading ? "Creating account..." : role === "recruiter" ? "Submit for Approval" : "Create Account"}

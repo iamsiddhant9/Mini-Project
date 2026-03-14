@@ -1,54 +1,275 @@
-.resume-header { margin-bottom:28px; animation:fadeUp 0.5s ease; }
-  .resume-header h1 { font-family:'Syne',sans-serif; font-size:28px; font-weight:700; letter-spacing:-0.5px; margin:30px; }
-  .resume-header p  { color:var(--muted); font-size:14px; margin:20px; }
+.resume-header {
+  margin-bottom: 28px;
+  animation: fadeUp 0.5s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
 
-  .resume-layout { display:grid; grid-template-columns:1fr 380px; gap:20px; animation:fadeUp 0.5s ease 0.1s both; }
+.resume-header h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin: 30px;
+}
 
-  .section-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:22px; margin-bottom:16px; }
-  .section-card h3 { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+.resume-header p {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 20px;
+}
 
-  .form-field { display:flex; flex-direction:column; gap:5px; margin-bottom:12px; }
-  .form-field label { font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.6px; }
-  .form-field input, .form-field textarea {
-    background:var(--surface2); border:1px solid var(--border); border-radius:9px;
-    padding:8px 12px; color:var(--text); font-size:13px; font-family:inherit; outline:none; transition:border-color 0.2s;
+.resume-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 20px;
+  animation: fadeUp 0.5s ease 0.1s both;
+}
+
+.section-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 22px;
+  margin-bottom: 16px;
+}
+
+.section-card h3 {
+  font-family: 'Syne', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 12px;
+}
+
+.form-field label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.form-field input,
+.form-field textarea {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 8px 12px;
+  color: var(--text);
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-field input:focus,
+.form-field textarea:focus {
+  border-color: var(--accent);
+}
+
+.form-field textarea {
+  resize: vertical;
+  min-height: 70px;
+  line-height: 1.5;
+}
+
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.entry-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 10px;
+  position: relative;
+}
+
+.entry-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.entry-sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.entry-desc {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 6px;
+  line-height: 1.4;
+}
+
+.entry-remove {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 14px;
+  transition: color 0.2s;
+}
+
+.entry-remove:hover {
+  color: var(--red);
+}
+
+.add-btn {
+  width: 100%;
+  padding: 9px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px dashed var(--border);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.add-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(59, 130, 246, 0.05);
+}
+
+/* Preview */
+.preview-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 22px;
+  position: sticky;
+  top: 20px;
+}
+
+.preview-card h3 {
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.resume-preview {
+  background: #fff;
+  border-radius: 10px;
+  padding: 24px;
+  color: #111;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 11px;
+  line-height: 1.5;
+  min-height: 400px;
+}
+
+.rp-name {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 2px;
+  letter-spacing: 0.5px;
+}
+
+.rp-contact {
+  font-size: 10px;
+  color: #64748b;
+  margin-bottom: 12px;
+}
+
+.rp-section-title {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #3b82f6;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 3px;
+  margin: 12px 0 6px;
+}
+
+.rp-entry {
+  margin-bottom: 8px;
+}
+
+.rp-entry-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #111;
+}
+
+.rp-entry-sub {
+  font-size: 10px;
+  color: #64748b;
+}
+
+.rp-entry-desc {
+  font-size: 10px;
+  color: #374151;
+  margin-top: 2px;
+}
+
+.export-btn {
+  width: 100%;
+  margin-top: 14px;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.2s;
+}
+
+.export-btn:hover {
+  opacity: 0.85;
+}
+
+@media (max-width: 900px) {
+  .resume-layout {
+    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column-reverse;
   }
-  .form-field input:focus, .form-field textarea:focus { border-color:var(--accent); }
-  .form-field textarea { resize:vertical; min-height:70px; line-height:1.5; }
-  .form-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-
-  .entry-card { background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:14px; margin-bottom:10px; position:relative; }
-  .entry-title { font-size:14px; font-weight:600; }
-  .entry-sub { font-size:12px; color:var(--muted); margin-top:2px; }
-  .entry-desc { font-size:12px; color:var(--muted); margin-top:6px; line-height:1.4; }
-  .entry-remove { position:absolute; top:12px; right:12px; cursor:pointer; color:var(--muted); font-size:14px; transition:color 0.2s; }
-  .entry-remove:hover { color:var(--red); }
-
-  .add-btn {
-    width:100%; padding:9px; border-radius:10px; font-size:12px; font-weight:600;
-    border:1px dashed var(--border); background:transparent; color:var(--muted);
-    cursor:pointer; transition:all 0.2s; font-family:inherit;
+  .preview-card {
+    position: relative;
+    top: 0;
+    margin-bottom: 20px;
   }
-  .add-btn:hover { border-color:var(--accent); color:var(--accent); background:rgba(59,130,246,0.05); }
-
-  /* Preview */
-  .preview-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:22px; position:sticky; top:20px; }
-  .preview-card h3 { font-family:'Syne',sans-serif; font-size:14px; font-weight:700; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; }
-  .resume-preview {
-    background:#fff; border-radius:10px; padding:24px; color:#111;
-    font-family:'DM Sans',sans-serif; font-size:11px; line-height:1.5; min-height:400px;
+  .resume-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
   }
-  .rp-name { font-family:'Syne',sans-serif; font-size:18px; font-weight:800; color:#111; margin-bottom:2px; }
-  .rp-contact { font-size:10px; color:#64748b; margin-bottom:12px; }
-  .rp-section-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#3b82f6; border-bottom:1px solid #e2e8f0; padding-bottom:3px; margin:12px 0 6px; }
-  .rp-entry { margin-bottom:8px; }
-  .rp-entry-title { font-size:12px; font-weight:700; color:#111; }
-  .rp-entry-sub { font-size:10px; color:#64748b; }
-  .rp-entry-desc { font-size:10px; color:#374151; margin-top:2px; }
-
-  .export-btn {
-    width:100%; margin-top:14px; padding:10px; border-radius:10px; font-size:13px;
-    font-weight:600; background:linear-gradient(135deg,var(--accent),var(--accent2));
-    border:none; color:#fff; cursor:pointer; font-family:inherit; transition:opacity 0.2s;
+  .resume-header h1 {
+    margin: 10px 0 0;
   }
-  .export-btn:hover { opacity:0.85; }
+  .resume-header p {
+    margin: 0 0 10px;
+  }
+}

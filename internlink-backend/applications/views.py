@@ -91,7 +91,7 @@ class ApplicationDetailView(APIView):
 
         with connection.cursor() as cur:
             cur.execute(
-                f"UPDATE applications SET {set_clause} WHERE id = %s AND user_id = %s RETURNING id, status, stage, notes, updated_at",
+                f"UPDATE applications SET {set_clause} WHERE id = %s AND user_id = %s RETURNING id, status, stage, notes, updated_at, internship_id",
                 values
             )
             row = cur.fetchone()
@@ -99,6 +99,29 @@ class ApplicationDetailView(APIView):
                 return Response({"error": "Application not found"}, status=404)
             cols = [d[0] for d in cur.description]
             result = {k: (v.isoformat() if hasattr(v, "isoformat") else v) for k, v in zip(cols, row)}
+
+            # --- Simple Notification Engine Trigger ---
+            if "status" in updates and updates["status"] in ["Interview", "Offer"]:
+                cur.execute("SELECT i.title, c.name FROM internships i LEFT JOIN companies c ON c.id = i.company_id WHERE i.id = %s", [result["internship_id"]])
+                intern_info = cur.fetchone()
+                if intern_info:
+                    title, company = intern_info
+                    message = f"Congratulations! Your application for {title} at {company} has been updated to '{updates['status']}'."
+                    
+                    from users.models import Notification
+                    Notification.objects.create(
+                        user_id=user_id,
+                        title=f"Application Update: {updates['status']}",
+                        message=message,
+                        type="update"
+                    )
+
+                    # Simulate Email Backend
+                    print(f"\n[{'='*40}]\n SIMULATED EMAIL NOTIFICATION\n[{'='*40}]")
+                    print(f"To: User ID {user_id}")
+                    print(f"Subject: Status Update! ({title})")
+                    print(f"Body:\n{message}")
+                    print(f"[{'='*40}]\n")
 
         return Response(result)
 
@@ -120,23 +143,49 @@ class ApplicationStatsView(APIView):
     def get(self, request):
         user_id = request.user.id
         with connection.cursor() as cur:
+            # Status counts
             cur.execute("""
                 SELECT status, COUNT(*) FROM applications
                 WHERE user_id = %s GROUP BY status
             """, [user_id])
             by_status = {row[0]: row[1] for row in cur.fetchall()}
 
+            # Daily counts for last 30 days
             cur.execute("""
-                SELECT TO_CHAR(applied_date, 'Mon') AS month, COUNT(*) AS count
+                SELECT
+                    generate_series(
+                        CURRENT_DATE - INTERVAL '29 days',
+                        CURRENT_DATE,
+                        INTERVAL '1 day'
+                    )::date AS day
+            """)
+            all_days = [row[0] for row in cur.fetchall()]
+
+            cur.execute("""
+                SELECT applied_date, COUNT(*) AS cnt
                 FROM applications
-                WHERE user_id = %s AND applied_date >= CURRENT_DATE - INTERVAL '6 months'
-                GROUP BY DATE_TRUNC('month', applied_date), TO_CHAR(applied_date, 'Mon')
-                ORDER BY DATE_TRUNC('month', applied_date)
+                WHERE user_id = %s
+                  AND applied_date >= CURRENT_DATE - INTERVAL '29 days'
+                GROUP BY applied_date
             """, [user_id])
-            monthly = [{"month": row[0], "count": row[1]} for row in cur.fetchall()]
+            daily_map = {row[0]: row[1] for row in cur.fetchall()}
+
+            daily = [
+                {"date": d.strftime("%b %d"), "count": daily_map.get(d, 0)}
+                for d in all_days
+            ]
+
+            # Top match score
+            cur.execute("SELECT COUNT(*) FROM match_scores WHERE user_id=%s", [user_id])
+            total_matches = cur.fetchone()[0]
 
         return Response({
-            "by_status": by_status,
-            "monthly":   monthly,
-            "total":     sum(by_status.values()),
+            "by_status":    by_status,
+            "daily":        daily,
+            "total":        sum(by_status.values()),
+            "total_matches": total_matches,
+            "pending":      by_status.get("Applied", 0),
+            "interview":    by_status.get("Interview", 0),
+            "offer":        by_status.get("Offer", 0),
+            "rejected":     by_status.get("Rejected", 0),
         })

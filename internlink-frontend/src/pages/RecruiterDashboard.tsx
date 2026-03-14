@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import './RecruiterDashboard.css';
-import { LayoutDashboard, PlusCircle, ClipboardList, Users, LogOut, MessageSquare, Gift, Building2 } from "lucide-react";
+import { LayoutDashboard, PlusCircle, ClipboardList, Users, LogOut, MessageSquare, Gift, Building2, CheckCircle2 } from "lucide-react";
 const BASE_URL = "http://localhost:8000/api";
 const token = () => localStorage.getItem("access_token");
 
@@ -98,7 +98,7 @@ export default function RecruiterDashboard() {
           <p>Manage your internship listings and applicants</p>
         </div>
 
-        {success && <div className="recruiter-success">✅ {success}</div>}
+        {success && <div className="recruiter-success"><CheckCircle2 size={16} style={{ display: "inline", marginRight: 6, verticalAlign: "middle" }} />{success}</div>}
 
         {/* Overview */}
         {tab === "overview" && (

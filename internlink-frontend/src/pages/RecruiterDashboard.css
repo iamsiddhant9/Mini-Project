@@ -378,3 +378,12 @@
 @media (max-width: 480px) {
   .recruiter-stats-grid { grid-template-columns: 1fr; }
 }
+@media (max-width: 768px) {
+  .rec-grid   { grid-template-columns: 1fr !important; }
+  .rec-stats  { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; }
+  .rec-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .rec-actions { width: 100%; flex-wrap: wrap; }
+}
+@media (max-width: 480px) {
+  .rec-stats { grid-template-columns: 1fr 1fr; }
+}

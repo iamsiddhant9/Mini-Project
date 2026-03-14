@@ -229,3 +229,18 @@
     padding-bottom: 10px;
   }
 }
+@media (max-width: 768px) {
+  .explore-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .explore-header > div:last-child { width: 100%; }
+  .sidebar-filters { flex-direction: row; flex-wrap: wrap; gap: 8px; }
+  .filter-group { min-width: 0; }
+}
+
+@media (max-width: 480px) {
+  .explore-card { padding: 14px; }
+  .explore-logo { width: 38px; height: 38px; font-size: 16px; }
+  .explore-title { font-size: 14px; }
+  .explore-footer { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .explore-footer > div:last-child { width: 100%; display: flex; gap: 8px; }
+  .explore-footer button { flex: 1; text-align: center; justify-content: center; }
+}
