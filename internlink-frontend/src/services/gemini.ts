@@ -1,7 +1,7 @@
 // src/services/gemini.ts
 // AI service — calls Django backend (Groq/Llama). API key is server-side.
 
-const BASE_URL = (import.meta.env.VITE_API_URL || "http://localhost:8000") + "/api";
+const BASE_URL = "https://mini-project-production-8656.up.railway.app/api";
 const token = () => localStorage.getItem("access_token") ?? "";
 
 const authPost = (path: string, body: object) =>

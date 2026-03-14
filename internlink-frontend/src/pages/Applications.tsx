@@ -7,7 +7,7 @@ import {
   CheckCircle2, Loader2, Bell, AlertTriangle, X
 } from "lucide-react";
 
-const BASE_URL = (import.meta.env.VITE_API_URL || "http://localhost:8000") + "/api";
+const BASE_URL = "https://mini-project-production-8656.up.railway.app/api";
 const token = () => localStorage.getItem("access_token");
 const api = {
   get:    (url: string)            => fetch(`${BASE_URL}${url}`, { headers: { Authorization: `Bearer ${token()}` } }).then(r => r.json()),

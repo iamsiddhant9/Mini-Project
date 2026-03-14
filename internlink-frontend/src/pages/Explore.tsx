@@ -4,7 +4,7 @@ import { useToast } from "../context/ToastContext";
 import { Search, X, MapPin, Clock, Heart, HeartOff, ChevronDown, AlertTriangle, Loader2, RefreshCw, Check } from "lucide-react";
 import { getToken, getRefreshToken, setTokens, clearTokens } from "../services/api";
 
-const BASE_URL = (import.meta.env.VITE_API_URL || "http://localhost:8000") + "/api";
+const BASE_URL = "https://mini-project-production-8656.up.railway.app/api";
 
 async function request(url: string, options: RequestInit = {}) {
   const headers: Record<string, string> = {
