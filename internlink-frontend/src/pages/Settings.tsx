@@ -6,15 +6,8 @@ import { useToast } from "../context/ToastContext";
 import { Sparkles, User, Bell, Target, Lock, Settings as SettingsIcon, AlertTriangle, Check } from "lucide-react";
 import "./Settings.css";
 
-const BASE_URL = "https://mini-project-production-8656.up.railway.app/api";
-const token = () => localStorage.getItem("access_token");
+import * as apiSvc from "../services/api";
 
-async function apiDelete(url: string) {
-  return fetch(`${BASE_URL}${url}`, {
-    method: "DELETE",
-    headers: { Authorization: `Bearer ${token()}` },
-  });
-}
 
 interface ToggleProps { checked: boolean; onChange: () => void; }
 function Toggle({ checked, onChange }: ToggleProps): ReactElement {
@@ -106,11 +99,11 @@ export default function Settings(): ReactElement {
     onConfirm: async () => {
       setConfirm(null);
       try {
-        const res = await apiDelete("/applications/");
-        if (res.ok || res.status === 204) success("Application history cleared.");
-        else error("Failed to clear applications.");
+        await apiSvc.request("/applications/", { method: "DELETE" });
+        success("Application history cleared.");
       } catch { error("Failed to clear applications."); }
     },
+
   });
 
   const handleDeleteAccount = () => setConfirm({
@@ -120,11 +113,11 @@ export default function Settings(): ReactElement {
     onConfirm: async () => {
       setConfirm(null);
       try {
-        const res = await apiDelete("/users/me/");
-        if (res.ok || res.status === 204) { success("Account deleted. Goodbye!"); setTimeout(() => logout(), 1500); }
-        else error("Failed to delete account.");
+        await apiSvc.request("/users/me/", { method: "DELETE" });
+        success("Account deleted. Goodbye!"); setTimeout(() => logout(), 1500);
       } catch { error("Failed to delete account."); }
     },
+
   });
 
   if (loading) return <div style={{ color:"var(--muted)",textAlign:"center",padding:"60px 0",fontSize:14 }}>Loading settings…</div>;

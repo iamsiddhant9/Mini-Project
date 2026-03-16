@@ -59,23 +59,31 @@ class RegisterView(APIView):
 
         is_approved = role == "student"
 
-        with connection.cursor() as cur:
-            cur.execute("SELECT id FROM users WHERE email = %s", [email])
-            if cur.fetchone():
-                return Response({"error": "An account with this email already exists"}, status=409)
+        try:
+            with connection.cursor() as cur:
+                cur.execute("SELECT id FROM users WHERE email = %s", [email])
+                if cur.fetchone():
+                    return Response({"error": "An account with this email already exists"}, status=409)
 
-            cur.execute("""
-                INSERT INTO users (email, password_hash, name, branch, year, university, role, is_approved)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                RETURNING id, email, name, branch, year, university, profile_strength, created_at, role, is_approved
-            """, [email, hash_password(password), name, branch, year, university, role, is_approved])
+                cur.execute("""
+                    INSERT INTO users (email, password_hash, name, branch, year, university, role, is_approved)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    RETURNING id, email, name, branch, year, university, profile_strength, created_at, role, is_approved
+                """, [email, hash_password(password), name, branch, year, university, role, is_approved])
 
-            row  = cur.fetchone()
-            cols = [d[0] for d in cur.description]
-            user = dict(zip(cols, row))
+                row  = cur.fetchone()
+                cols = [d[0] for d in cur.description]
+                user = dict(zip(cols, row))
 
-        tokens = get_tokens(user["id"])
-        return Response({"message": "Account created successfully", "user": user_to_dict(user), "tokens": tokens}, status=201)
+            tokens = get_tokens(user["id"])
+            return Response({"message": "Account created successfully", "user": user_to_dict(user), "tokens": tokens}, status=201)
+        except Exception as e:
+            if "violates check constraint" in str(e).lower():
+                if "year" in str(e).lower():
+                    return Response({"error": "Study year must be between 1 and 5"}, status=400)
+                return Response({"error": f"Invalid data: {str(e)}"}, status=400)
+            return Response({"error": "An internal server error occurred"}, status=500)
+
 
 
 class LoginView(APIView):
@@ -88,22 +96,26 @@ class LoginView(APIView):
         if not email or not password:
             return Response({"error": "Email and password are required"}, status=400)
 
-        with connection.cursor() as cur:
-            cur.execute("SELECT * FROM users WHERE email = %s AND is_active = TRUE", [email])
-            row = cur.fetchone()
-            if not row:
+        try:
+            with connection.cursor() as cur:
+                cur.execute("SELECT * FROM users WHERE email = %s AND is_active = TRUE", [email])
+                row = cur.fetchone()
+                if not row:
+                    return Response({"error": "Invalid email or password"}, status=401)
+                cols = [d[0] for d in cur.description]
+                user = dict(zip(cols, row))
+
+            if user["password_hash"] != hash_password(password):
                 return Response({"error": "Invalid email or password"}, status=401)
-            cols = [d[0] for d in cur.description]
-            user = dict(zip(cols, row))
 
-        if user["password_hash"] != hash_password(password):
-            return Response({"error": "Invalid email or password"}, status=401)
+            if user.get("role") == "recruiter" and not user.get("is_approved"):
+                return Response({"error": "Your recruiter account is pending admin approval"}, status=403)
 
-        if user.get("role") == "recruiter" and not user.get("is_approved"):
-            return Response({"error": "Your recruiter account is pending admin approval"}, status=403)
+            tokens = get_tokens(user["id"])
+            return Response({"message": "Login successful", "user": user_to_dict(user), "tokens": tokens})
+        except Exception as e:
+            return Response({"error": "An internal server error occurred during login"}, status=500)
 
-        tokens = get_tokens(user["id"])
-        return Response({"message": "Login successful", "user": user_to_dict(user), "tokens": tokens})
 
 
 class GoogleAuthView(APIView):
@@ -137,39 +149,45 @@ class GoogleAuthView(APIView):
         if not email:
             return Response({"error": "Could not get email from Google"}, status=400)
 
-        with connection.cursor() as cur:
-            cur.execute("SELECT * FROM users WHERE email = %s AND is_active = TRUE", [email])
-            row = cur.fetchone()
+        try:
+            with connection.cursor() as cur:
+                cur.execute("SELECT * FROM users WHERE email = %s AND is_active = TRUE", [email])
+                row = cur.fetchone()
 
-            if row:
-                cols = [d[0] for d in cur.description]
-                user = dict(zip(cols, row))
-                cur.execute("""
-                    UPDATE users
-                    SET google_sub         = COALESCE(NULLIF(google_sub, ''), %s),
-                        profile_photo_url  = COALESCE(NULLIF(profile_photo_url, ''), %s)
-                    WHERE id = %s
-                """, [google_sub, avatar_url, user["id"]])
+                if row:
+                    cols = [d[0] for d in cur.description]
+                    user = dict(zip(cols, row))
+                    cur.execute("""
+                        UPDATE users
+                        SET google_sub         = COALESCE(NULLIF(google_sub, ''), %s),
+                            profile_photo_url  = COALESCE(NULLIF(profile_photo_url, ''), %s)
+                        WHERE id = %s
+                    """, [google_sub, avatar_url, user["id"]])
 
-                if user.get("role") == "recruiter" and not user.get("is_approved"):
-                    return Response({"error": "Your recruiter account is pending admin approval"}, status=403)
-            else:
-                cur.execute("""
-                    INSERT INTO users
-                        (email, password_hash, name, role, is_approved, google_sub, profile_photo_url)
-                    VALUES (%s, %s, %s, 'student', TRUE, %s, %s)
-                    RETURNING *
-                """, [email, "", name, google_sub, avatar_url])
-                row  = cur.fetchone()
-                cols = [d[0] for d in cur.description]
-                user = dict(zip(cols, row))
+                    if user.get("role") == "recruiter" and not user.get("is_approved"):
+                        return Response({"error": "Your recruiter account is pending admin approval"}, status=403)
+                else:
+                    cur.execute("""
+                        INSERT INTO users
+                            (email, password_hash, name, role, is_approved, google_sub, profile_photo_url)
+                        VALUES (%s, %s, %s, 'student', TRUE, %s, %s)
+                        RETURNING *
+                    """, [email, "", name, google_sub, avatar_url])
+                    row  = cur.fetchone()
+                    cols = [d[0] for d in cur.description]
+                    user = dict(zip(cols, row))
 
-        tokens = get_tokens(user["id"])
-        return Response({
-            "message": "Google login successful",
-            "user":    user_to_dict(user),
-            "tokens":  tokens,
-        })
+            tokens = get_tokens(user["id"])
+            return Response({
+                "message": "Google login successful",
+                "user":    user_to_dict(user),
+                "tokens":  tokens,
+            })
+        except Exception as e:
+            if "violates check constraint" in str(e).lower():
+                return Response({"error": f"Invalid data: {str(e)}"}, status=400)
+            return Response({"error": "An internal server error occurred during Google Auth"}, status=500)
+
 
 
 class ProfileView(APIView):
@@ -208,12 +226,20 @@ class ProfileView(APIView):
             return Response({"error": "No valid fields to update"}, status=400)
         set_clause = ", ".join(f"{k} = %s" for k in updates)
         values = list(updates.values()) + [user_id]
-        with connection.cursor() as cur:
-            cur.execute(f"UPDATE users SET {set_clause} WHERE id = %s RETURNING *", values)
-            row  = cur.fetchone()
-            cols = [d[0] for d in cur.description]
-            user = dict(zip(cols, row))
-        return Response(user_to_dict(user))
+        try:
+            with connection.cursor() as cur:
+                cur.execute(f"UPDATE users SET {set_clause} WHERE id = %s RETURNING *", values)
+                row  = cur.fetchone()
+                cols = [d[0] for d in cur.description]
+                user = dict(zip(cols, row))
+            return Response(user_to_dict(user))
+        except Exception as e:
+            if "violates check constraint" in str(e).lower():
+                if "year" in str(e).lower():
+                    return Response({"error": "Study year must be between 1 and 5"}, status=400)
+                return Response({"error": f"Invalid data: {str(e)}"}, status=400)
+            return Response({"error": "An internal server error occurred while updating profile"}, status=500)
+
 
     def delete(self, request):
         """DELETE /api/users/me/ — permanently delete the authenticated user's account."""

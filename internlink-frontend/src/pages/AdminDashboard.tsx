@@ -4,44 +4,8 @@ import './AdminDashboard.css';
 import { LayoutDashboard, Clock, Users, Briefcase, LogOut, GraduationCap, Building2, AlertCircle, CheckCircle, Send, RefreshCw } from "lucide-react";
 import { getToken, getRefreshToken, setTokens, clearTokens } from "../services/api";
 
-const BASE_URL = "https://mini-project-production-8656.up.railway.app/api";
+import * as apiSvc from "../services/api";
 
-async function request(url: string, options: RequestInit = {}) {
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${getToken()}`,
-    ...(options.headers as Record<string, string>),
-  };
-  let res = await fetch(`${BASE_URL}${url}`, { ...options, headers });
-  if (res.status === 401) {
-    const refresh = getRefreshToken();
-    if (refresh) {
-      const r = await fetch(`${BASE_URL}/token/refresh/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refresh }),
-      });
-      if (r.ok) {
-        const data = await r.json();
-        setTokens(data.access, refresh);
-        headers.Authorization = `Bearer ${data.access}`;
-        res = await fetch(`${BASE_URL}${url}`, { ...options, headers });
-      } else {
-        clearTokens();
-        window.location.href = "/login";
-        return;
-      }
-    }
-  }
-  return res.json();
-}
-
-const api = {
-  get:    (url: string)            => request(url),
-  patch:  (url: string, data: any) => request(url, { method: "PATCH",  body: JSON.stringify(data) }),
-  post:   (url: string, data: any) => request(url, { method: "POST",   body: JSON.stringify(data) }),
-  delete: (url: string)            => request(url, { method: "DELETE" }),
-};
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
@@ -57,42 +21,42 @@ export default function AdminDashboard() {
   const [fetchMsg,  setFetchMsg]  = useState("");
 
   useEffect(() => {
-    api.get("/admin-panel/stats/").then(setStats);
-    api.get("/admin-panel/pending-recruiters/").then(setPending);
+    apiSvc.admin.getStats().then(setStats);
+    apiSvc.admin.getPendingRecruiters().then(setPending);
   }, []);
+
 
   useEffect(() => {
     if (tab === "users") {
-      const params = new URLSearchParams();
-      if (roleFilter) params.set("role", roleFilter);
-      if (search)     params.set("search", search);
-      api.get(`/admin-panel/users/?${params}`).then(setUsers);
+      apiSvc.admin.getUsers({ role: roleFilter, search }).then(setUsers);
     }
-    if (tab === "internships") api.get("/admin-panel/internships/").then(setInternships);
+    if (tab === "internships") apiSvc.admin.getInternships().then(setInternships);
   }, [tab, roleFilter, search]);
 
+
   const approveRecruiter = async (userId: number, action: "approve"|"reject") => {
-    await api.patch(`/admin-panel/users/${userId}/approve/`, { action });
-    api.get("/admin-panel/pending-recruiters/").then(setPending);
-    api.get("/admin-panel/stats/").then(setStats);
+    await apiSvc.admin.approveRecruiter(userId, action);
+    apiSvc.admin.getPendingRecruiters().then(setPending);
+    apiSvc.admin.getStats().then(setStats);
   };
 
+
   const toggleUser = async (userId: number) => {
-    await api.patch(`/admin-panel/users/${userId}/toggle/`, {});
-    const params = new URLSearchParams();
-    if (roleFilter) params.set("role", roleFilter);
-    api.get(`/admin-panel/users/?${params}`).then(setUsers);
+    await apiSvc.admin.toggleUser(userId);
+    apiSvc.admin.getUsers({ role: roleFilter }).then(setUsers);
   };
+
 
   const fetchJobs = async () => {
     setFetching(true);
     setFetchMsg("");
-    const res = await api.post("/jobs/fetch-all/", {});
+    const res = await apiSvc.jobs.fetchAll();
     setFetching(false);
     setFetchMsg(res.message || "Done");
-    api.get("/admin-panel/stats/").then(setStats);
+    apiSvc.admin.getStats().then(setStats);
     setTimeout(() => setFetchMsg(""), 5000);
   };
+
 
 
 

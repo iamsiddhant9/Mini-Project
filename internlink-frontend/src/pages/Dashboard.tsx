@@ -4,12 +4,8 @@ import './Dashboard.css';
 import { useAuth } from "../context/AuthContext";
 import { Target, Send, MessageSquare, Sparkles, Search, Bell, Calendar, Brain, Cloud, Smartphone, Bot, Shield, FileText, Star, Heart, Briefcase, ChevronLeft, ChevronRight, X, Check, Mic, Mail, Clock, CheckCircle2 } from "lucide-react";
 
-const BASE_URL = "https://mini-project-production-8656.up.railway.app/api";
-const token = () => localStorage.getItem("access_token");
-const api = {
-  get:  (url: string)            => fetch(`${BASE_URL}${url}`, { headers: { Authorization: `Bearer ${token()}` } }).then(r => r.json()),
-  post: (url: string, data: any) => fetch(`${BASE_URL}${url}`, { method: "POST", headers: { Authorization: `Bearer ${token()}`, "Content-Type": "application/json" }, body: JSON.stringify(data) }).then(r => r.json()),
-};
+import * as apiSvc from "../services/api";
+
 
 const categoryIcon: Record<string, ReactElement> = {
   "AI/ML": <Brain size={20} />, "Cloud": <Cloud size={20} />, "Mobile": <Smartphone size={20} />,
@@ -253,38 +249,35 @@ export default function Dashboard(): ReactElement {
 
   useEffect(() => {
     const loadRecs = () =>
-      api.get("/internships/recommendations/?limit=5").then(res => {
+      apiSvc.internships.recommendations(5).then(res => {
         const list = Array.isArray(res) ? res : (res?.results ?? res?.recommendations ?? []);
-        // Force update the UI with real array values directly instead of risking stale caches
         setInternships([...list.slice(0, 5)]);
       });
     
-    // Compute matches first, then definitively reload recommendations AND stats to avoid race conditions
-    api.post("/users/compute-matches/", {}).then(() => {
+    apiSvc.user.computeMatches().then(() => {
       loadRecs();
-      api.get("/applications/stats/").then(res => { if (!res.error) setAppStats(res); });
+      apiSvc.applications.stats().then(res => { if (res && !res.error) setAppStats(res); });
     }).catch(() => {
       loadRecs();
-      api.get("/applications/stats/").then(res => { if (!res.error) setAppStats(res); });
+      apiSvc.applications.stats().then(res => { if (res && !res.error) setAppStats(res); });
     });
 
-    api.get("/applications/?limit=50").then(res => {
+    apiSvc.applications.list().then(res => {
       const list = Array.isArray(res) ? res : (res?.results ?? res?.applications ?? []);
       setApplications(list.slice(0, 5));
       setApplied(new Set(list.map((a: any) => a.internship?.id ?? a.internship_id)));
     });
 
-    api.get("/saved/?limit=6").then(res => {
+    apiSvc.saved.list().then(res => {
       const list = Array.isArray(res) ? res : (res?.results ?? res?.saved ?? []);
       setSaved(list.slice(0, 6));
     });
 
-    api.get("/users/skills/").then(res => {
+    apiSvc.user.getSkills().then(res => {
       if (Array.isArray(res)) setUserSkills(res.slice(0, 5));
     });
 
-    // ── Fetch REAL upcoming deadlines from internships ──
-    api.get("/internships/?order_by=deadline&limit=50").then(res => {
+    apiSvc.internships.list({ order_by: "deadline", limit: 50 }).then(res => {
       const items: any[] = res.internships || res.results || [];
       const upcoming = items
         .filter(i => i.deadline && daysUntil(i.deadline) >= 0 && daysUntil(i.deadline) <= 90)
@@ -293,9 +286,8 @@ export default function Dashboard(): ReactElement {
       setDeadlines(upcoming);
     }).catch(() => {});
 
-    // ── Fetch Notifications ──
-    api.get("/users/notifications/").then(res => {
-      if (res.notifications) {
+    apiSvc.user.getNotifications().then(res => {
+      if (res && res.notifications) {
         setDbNotifs(res.notifications);
         setUnreadCount(res.unread_count || 0);
       }
@@ -303,12 +295,14 @@ export default function Dashboard(): ReactElement {
 
   }, []);
 
+
   const handleApply = async (internshipId: number) => {
     if (applied.has(internshipId)) return;
     setApplying(internshipId);
     try {
-      const res = await api.post("/applications/", { internship_id: internshipId });
+      const res = await apiSvc.applications.apply(internshipId);
       if (res.error) {
+
         alert(res.error);
         if (res.error.toLowerCase().includes("already applied")) {
           setApplied(prev => new Set(prev).add(internshipId));
@@ -333,21 +327,14 @@ export default function Dashboard(): ReactElement {
   const urgentCount = unreadCount;
 
   const markNotificationsRead = () => {
-    fetch(`${BASE_URL}/users/notifications/`, { method: "PATCH", headers: { Authorization: `Bearer ${token()}`, "Content-Type": "application/json" } })
-      .catch(() => {});
-    
+    apiSvc.user.markNotificationRead().catch(() => {});
     setDbNotifs(prev => prev.map(n => ({ ...n, is_read: true })));
     setUnreadCount(0);
   };
 
   const handleNotificationClick = (n: any) => {
     if (!n.is_read) {
-      fetch(`${BASE_URL}/users/notifications/`, { 
-        method: "PATCH", 
-        headers: { Authorization: `Bearer ${token()}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ id: n.id })
-      }).catch(() => {});
-      
+      apiSvc.user.markNotificationRead(n.id).catch(() => {});
       setDbNotifs(prev => prev.map(notif => notif.id === n.id ? { ...notif, is_read: true } : notif));
       setUnreadCount(prev => Math.max(0, prev - 1));
     }

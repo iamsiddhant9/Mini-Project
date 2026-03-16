@@ -7,13 +7,8 @@ import {
   CheckCircle2, Loader2, Bell, AlertTriangle, X
 } from "lucide-react";
 
-const BASE_URL = "https://mini-project-production-8656.up.railway.app/api";
-const token = () => localStorage.getItem("access_token");
-const api = {
-  get:    (url: string)            => fetch(`${BASE_URL}${url}`, { headers: { Authorization: `Bearer ${token()}` } }).then(r => r.json()),
-  patch:  (url: string, data: any) => fetch(`${BASE_URL}${url}`, { method: "PATCH",  headers: { Authorization: `Bearer ${token()}`, "Content-Type": "application/json" }, body: JSON.stringify(data) }).then(r => r.json()),
-  delete: (url: string)            => fetch(`${BASE_URL}${url}`, { method: "DELETE", headers: { Authorization: `Bearer ${token()}` } }),
-};
+import * as apiSvc from "../services/api";
+
 
 const PIPELINE = [
   { status: "Applied",              label: "Applied",        color: "#60a5fa", bg: "rgba(96,165,250,0.08)",  icon: <Send size={14} />,         desc: "Application submitted" },
@@ -396,12 +391,13 @@ export default function Applications(): ReactElement {
   const [showNudgeBanner, setShowNudgeBanner] = useState(true);
 
   useEffect(() => {
-    api.get("/applications/").then(res => {
+    apiSvc.applications.list().then(res => {
       if (res.all && Array.isArray(res.all)) setApps(res.all);
       else if (Array.isArray(res)) setApps(res);
       setLoading(false);
     });
   }, []);
+
 
   const dismissGuide = () => {
     localStorage.setItem(GUIDE_KEY, "1");
@@ -413,28 +409,33 @@ export default function Applications(): ReactElement {
 
   const updateStatus = async (id: number, status: string) => {
     updateApp(id, { status });
-    await api.patch(`/applications/${id}/`, { status });
+    await apiSvc.applications.update(id, { status });
   };
+
 
   const deleteApp = async (id: number) => {
     setApps(prev => prev.filter(a => a.id !== id));
-    await api.delete(`/applications/${id}/`);
+    await apiSvc.applications.remove(id);
   };
 
+
   const saveNote = async (id: number, notes: string) => {
-    await api.patch(`/applications/${id}/`, { notes });
+    await apiSvc.applications.update(id, { notes });
     updateApp(id, { notes });
   };
 
+
   const saveInterview = async (id: number, data: any) => {
-    await api.patch(`/applications/${id}/`, data);
+    await apiSvc.applications.update(id, data);
     updateApp(id, data);
   };
 
+
   const saveOffer = async (id: number, data: any) => {
-    await api.patch(`/applications/${id}/`, data);
+    await apiSvc.applications.update(id, data);
     updateApp(id, data);
   };
+
 
   const displayed = filter === "All" ? apps : apps.filter(a => a.status === filter);
   const counts    = Object.fromEntries(PIPELINE.map(p => [p.status, apps.filter(a => a.status === p.status).length]));

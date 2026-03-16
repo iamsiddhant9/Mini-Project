@@ -11,10 +11,8 @@ import {
 } from "lucide-react";
 import { ModeToggle } from "../components/ModeToggle";
 
-const BASE_URL = "https://mini-project-production-8656.up.railway.app/api";
-const token = () => localStorage.getItem("access_token");
-const apiFetch = (url: string) =>
-  fetch(`${BASE_URL}${url}`, { headers: { Authorization: `Bearer ${token()}` } }).then(r => r.json());
+import * as apiSvc from "../services/api";
+
 
 interface NavItem { icon: ReactElement; label: string; path: string; badge?: number; badgeClass?: string; }
 interface NavGroup { label: string; items: NavItem[]; }
@@ -54,17 +52,20 @@ export default function DashboardLayout(): ReactElement {
   }, [sidebarOpen]);
 
   useEffect(() => {
-    apiFetch("/internships/recommendations/?limit=1").then(res => {
+    apiSvc.internships.recommendations(1).then(res => {
       const t = res?.total ?? res?.count ?? (Array.isArray(res) ? res.length : undefined);
       if (t) setRecCount(t);
     }).catch(() => {});
-    apiFetch("/applications/stats/").then(res => {
+
+    apiSvc.applications.stats().then(res => {
       if (!res?.error) { const act = (res?.interview ?? 0) + (res?.offer ?? 0); setAppCount(act); }
     }).catch(() => {});
-    apiFetch("/saved/").then(res => {
+
+    apiSvc.saved.list().then(res => {
       const l = Array.isArray(res) ? res : (res?.saved ?? res?.results ?? []);
       if (l.length > 0) setSavedCount(l.length);
     }).catch(() => {});
+
   }, []);
 
   const navGroups: NavGroup[] = [

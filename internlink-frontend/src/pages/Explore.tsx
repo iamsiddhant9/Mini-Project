@@ -4,43 +4,8 @@ import { useToast } from "../context/ToastContext";
 import { Search, X, MapPin, Clock, Heart, HeartOff, ChevronDown, AlertTriangle, Loader2, RefreshCw, Check } from "lucide-react";
 import { getToken, getRefreshToken, setTokens, clearTokens } from "../services/api";
 
-const BASE_URL = "https://mini-project-production-8656.up.railway.app/api";
+import * as apiSvc from "../services/api";
 
-async function request(url: string, options: RequestInit = {}) {
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${getToken()}`,
-    ...(options.headers as Record<string, string>),
-  };
-  let res = await fetch(`${BASE_URL}${url}`, { ...options, headers });
-  if (res.status === 401) {
-    const refresh = getRefreshToken();
-    if (refresh) {
-      const r = await fetch(`${BASE_URL}/token/refresh/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refresh }),
-      });
-      if (r.ok) {
-        const data = await r.json();
-        setTokens(data.access, refresh);
-        headers.Authorization = `Bearer ${data.access}`;
-        res = await fetch(`${BASE_URL}${url}`, { ...options, headers });
-      } else {
-        clearTokens();
-        window.location.href = "/login";
-        return;
-      }
-    }
-  }
-  return res.json();
-}
-
-const api = {
-  get:    (url: string)            => request(url),
-  post:   (url: string, data: any) => request(url, { method: "POST",   body: JSON.stringify(data) }),
-  delete: (url: string)            => request(url, { method: "DELETE" }),
-};
 
 const CATEGORIES = ["All","AI/ML","Backend","Frontend","Cloud","Mobile","Data","Security","DevOps","Design","Other"];
 const MODES      = ["All","Remote","Hybrid","On-site"];
@@ -114,20 +79,21 @@ export default function Explore(): ReactElement {
     }
     setError("");
     try {
-      const params = new URLSearchParams();
-      if (search)             params.set("search",   search);
-      if (category !== "All") params.set("category", category);
-      if (mode !== "All")     params.set("mode",     mode);
-      params.set("order_by", sortBy);
-      params.set("limit",    String(PAGE_SIZE));
-      params.set("offset",   String(newOffset));
-      const res = await api.get(`/internships/?${params}`);
+      const res = await apiSvc.internships.list({
+        search,
+        category: category !== "All" ? category : undefined,
+        mode: mode !== "All" ? mode : undefined,
+        order_by: sortBy,
+        limit: PAGE_SIZE,
+        offset: newOffset,
+      });
       const items: any[] = res.internships || res.results || [];
       const total: number = res.total ?? res.count ?? 0;
       setData(prev => replace ? items : [...prev, ...items]);
       setOffset(newOffset + items.length);
       setHasMore(items.length === PAGE_SIZE);
       setTotalCount(total || (replace ? items.length : offset + items.length));
+
     } catch {
       setError("Failed to load internships");
     } finally {
@@ -144,15 +110,16 @@ export default function Explore(): ReactElement {
   }, [search, category, mode, sortBy]);
 
   useEffect(() => {
-    api.get("/applications/").then(res => {
+    apiSvc.applications.list().then(res => {
       const apps = res.applications || res || [];
       if (Array.isArray(apps)) setApplied(new Set(apps.map((a: any) => a.internship_id)));
     });
-    api.get("/saved/").then(res => {
+    apiSvc.saved.list().then(res => {
       const s = res.saved || res || [];
       if (Array.isArray(s)) setSaved(new Set(s.map((i: any) => i.internship_id ?? i.id)));
     });
   }, []);
+
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -170,7 +137,8 @@ export default function Explore(): ReactElement {
   if (!confirmTarget) return;
   setApplying(true);
   try {
-    const res = await api.post("/applications/", { internship_id: confirmTarget.id });
+    const res = await apiSvc.applications.apply(confirmTarget.id);
+
     if (res.id || res.message) {
       setApplied(prev => new Set(prev).add(confirmTarget.id));
       const url = confirmTarget.source_url || confirmTarget.apply_url;
@@ -194,17 +162,18 @@ export default function Explore(): ReactElement {
   
   const handleSave = async (internshipId: number) => {
     if (saved.has(internshipId)) {
-      const res = await api.get("/saved/");
+      const res = await apiSvc.saved.list();
       const s = res.saved || res || [];
       const match = s.find((i: any) => (i.internship_id ?? i.id) === internshipId);
-      if (match) await api.delete(`/saved/${match.id}/`);
+      if (match) await apiSvc.saved.unsave(match.id);
       setSaved(prev => { const n = new Set(prev); n.delete(internshipId); return n; });
       info("Removed from saved");
     } else {
-      await api.post("/saved/", { internship_id: internshipId });
+      await apiSvc.saved.save(internshipId);
       setSaved(prev => new Set(prev).add(internshipId));
       success("Saved!");
     }
+
   };
 
   return (

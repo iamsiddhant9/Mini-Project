@@ -2,14 +2,8 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import './RecruiterDashboard.css';
 import { LayoutDashboard, PlusCircle, ClipboardList, Users, LogOut, MessageSquare, Gift, Building2, CheckCircle2 } from "lucide-react";
-const BASE_URL = "https://mini-project-production-8656.up.railway.app/api";
-const token = () => localStorage.getItem("access_token");
+import * as apiSvc from "../services/api";
 
-const api = {
-  get:   (url: string) => fetch(`${BASE_URL}${url}`, { headers: { Authorization: `Bearer ${token()}` } }).then(r => r.json()),
-  post:  (url: string, data: any) => fetch(`${BASE_URL}${url}`, { method: "POST", headers: { Authorization: `Bearer ${token()}`, "Content-Type": "application/json" }, body: JSON.stringify(data) }).then(r => r.json()),
-  patch: (url: string, data: any) => fetch(`${BASE_URL}${url}`, { method: "PATCH", headers: { Authorization: `Bearer ${token()}`, "Content-Type": "application/json" }, body: JSON.stringify(data) }).then(r => r.json()),
-};
 
 const CATEGORIES = ["AI/ML","Backend","Frontend","Cloud","Mobile","Data","Security","DevOps","Design","Other"];
 const MODES = ["Remote","Hybrid","On-site"];
@@ -35,14 +29,15 @@ export default function RecruiterDashboard() {
   });
 
   useEffect(() => {
-    api.get("/recruiter/stats/").then(res => { if (!res.error) setStats(res); });
-    api.get("/recruiter/internships/").then(res => { if (Array.isArray(res)) setListings(res); });
+    apiSvc.recruiter.getStats().then(res => { if (!res.error) setStats(res); });
+    apiSvc.recruiter.getInternships().then(res => { if (Array.isArray(res)) setListings(res); });
   }, []);
+
 
   const handlePost = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const res = await api.post("/recruiter/internships/", {
+    const res = await apiSvc.recruiter.postInternship({
       ...form,
       stipend_num: parseInt(form.stipend_num as any) || 0,
       tags: form.tags.split(",").map(t => t.trim()).filter(Boolean),
@@ -51,26 +46,29 @@ export default function RecruiterDashboard() {
     if (res.id) {
       setSuccess("Internship posted successfully!");
       setTab("listings");
-      api.get("/recruiter/internships/").then(res => { if (Array.isArray(res)) setListings(res); });
-      api.get("/recruiter/stats/").then(res => { if (!res.error) setStats(res); });
+      apiSvc.recruiter.getInternships().then(res => { if (Array.isArray(res)) setListings(res); });
+      apiSvc.recruiter.getStats().then(res => { if (!res.error) setStats(res); });
       setTimeout(() => setSuccess(""), 3000);
     }
+
   };
 
   const loadApplicants = async (listing: any) => {
     setSelectedListing(listing);
-    const res = await api.get(`/recruiter/internships/${listing.id}/applicants/`);
+    const res = await apiSvc.recruiter.getApplicants(listing.id);
+
     setApplicants(res.applicants || []);
     setTab("applicants");
   };
 
   const updateStatus = async (appId: number, status: string) => {
-    await api.patch(`/recruiter/applications/${appId}/`, { status });
+    await apiSvc.recruiter.updateApplicationStatus(appId, status);
     if (selectedListing) {
-      const res = await api.get(`/recruiter/internships/${selectedListing.id}/applicants/`);
+      const res = await apiSvc.recruiter.getApplicants(selectedListing.id);
       setApplicants(res.applicants || []);
     }
   };
+
 
   return (
     <div className="recruiter-page">

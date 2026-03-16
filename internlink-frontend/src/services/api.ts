@@ -1,4 +1,4 @@
-const BASE_URL = "https://mini-project-production-8656.up.railway.app/api";
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
 // ── Token Management ──────────────────────────────────────────────────────────
 export const getToken = () => localStorage.getItem("access_token");
@@ -17,18 +17,27 @@ export const clearTokens = () => {
 async function refreshAccessToken(): Promise<boolean> {
   const refresh = getRefreshToken();
   if (!refresh) return false;
-  const res = await fetch(`${BASE_URL}/token/refresh/`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ refresh }),
-  });
-  if (!res.ok) return false;
-  const data = await res.json();
-  setTokens(data.access, refresh);
-  return true;
+  try {
+    const res = await fetch(`${BASE_URL}/token/refresh/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh }),
+    });
+    if (!res.ok) {
+      console.error(`Token refresh failed: ${res.status} ${res.statusText}`);
+      return false;
+    }
+    const data = await res.json();
+    setTokens(data.access, refresh);
+    return true;
+  } catch (error) {
+    console.error("Token refresh error:", error);
+    return false;
+  }
 }
 
-async function request(endpoint: string, options: RequestInit = {}) {
+export async function request(endpoint: string, options: RequestInit = {}) {
+
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(options.headers as Record<string, string>),
@@ -36,13 +45,14 @@ async function request(endpoint: string, options: RequestInit = {}) {
   const token = getToken();
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  let res = await fetch(`${BASE_URL}${endpoint}`, { ...options, headers });
+  const url = `${BASE_URL}${endpoint}`;
+  let res = await fetch(url, { ...options, headers });
 
   if (res.status === 401) {
     const refreshed = await refreshAccessToken();
     if (refreshed) {
       headers["Authorization"] = `Bearer ${getToken()}`;
-      res = await fetch(`${BASE_URL}${endpoint}`, { ...options, headers });
+      res = await fetch(url, { ...options, headers });
     } else {
       clearTokens();
       window.location.href = "/login";
@@ -50,7 +60,16 @@ async function request(endpoint: string, options: RequestInit = {}) {
     }
   }
 
-  return res.json();
+  const contentType = res.headers.get("content-type");
+  if (contentType && contentType.includes("application/json")) {
+    return res.json();
+  } else {
+    const text = await res.text();
+    console.error(`API Error: Expected JSON, but got ${contentType} from ${url}`);
+    console.error(`Status: ${res.status} ${res.statusText}`);
+    console.error(`Response snippet: ${text.substring(0, 200)}...`);
+    throw new Error(`Invalid response from server: ${res.status}`);
+  }
 }
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
@@ -63,8 +82,12 @@ export const auth = {
   login: (email: string, password: string) =>
     request("/auth/login/", { method: "POST", body: JSON.stringify({ email, password }) }),
 
+  googleLogin: (credential: string) =>
+    request("/auth/google/", { method: "POST", body: JSON.stringify({ credential }) }),
+
   logout: () => clearTokens(),
 };
+
 
 // ── User ──────────────────────────────────────────────────────────────────────
 export const user = {
@@ -129,4 +152,42 @@ export const hackathons = {
   },
   detail: (id: number) => request(`/hackathons/${id}/`),
   recommendations: (limit = 10) => request(`/hackathons/recommendations/?limit=${limit}`),
+};
+
+// ── Recruiter ────────────────────────────────────────────────────────────────
+export const recruiter = {
+  getStats: () => request("/recruiter/stats/"),
+  getInternships: () => request("/recruiter/internships/"),
+  postInternship: (data: any) => request("/recruiter/internships/", { method: "POST", body: JSON.stringify(data) }),
+  getApplicants: (internshipId: number) => request(`/recruiter/internships/${internshipId}/applicants/`),
+  updateApplicationStatus: (appId: number, status: string) =>
+    request(`/recruiter/applications/${appId}/`, { method: "PATCH", body: JSON.stringify({ status }) }),
+};
+
+// ── AI ────────────────────────────────────────────────────────────────────────
+export const ai = {
+  matchExplanation: (data: any) => request("/ai/match-explanation/", { method: "POST", body: JSON.stringify(data) }),
+  skillGap: () => request("/ai/skill-gap/", { method: "POST", body: JSON.stringify({}) }),
+  generateResume: (data: any) => request("/ai/generate-resume/", { method: "POST", body: JSON.stringify(data) }),
+};
+
+
+// ── Admin ────────────────────────────────────────────────────────────────────
+export const admin = {
+  getStats: () => request("/admin-panel/stats/"),
+  getPendingRecruiters: () => request("/admin-panel/pending-recruiters/"),
+  getUsers: (params?: { role?: string; search?: string }) => {
+    const query = new URLSearchParams(params as Record<string, string>).toString();
+    return request(`/admin-panel/users/${query ? "?" + query : ""}`);
+  },
+  getInternships: () => request("/admin-panel/internships/"),
+  approveRecruiter: (userId: number, action: "approve" | "reject") =>
+    request(`/admin-panel/users/${userId}/approve/`, { method: "PATCH", body: JSON.stringify({ action }) }),
+  toggleUser: (userId: number) =>
+    request(`/admin-panel/users/${userId}/toggle/`, { method: "PATCH", body: JSON.stringify({}) }),
+};
+
+// ── Jobs ──────────────────────────────────────────────────────────────────────
+export const jobs = {
+  fetchAll: () => request("/jobs/fetch-all/", { method: "POST", body: JSON.stringify({}) }),
 };

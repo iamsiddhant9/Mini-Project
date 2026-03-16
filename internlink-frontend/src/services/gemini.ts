@@ -1,15 +1,8 @@
 // src/services/gemini.ts
 // AI service — calls Django backend (Groq/Llama). API key is server-side.
 
-const BASE_URL = "https://mini-project-production-8656.up.railway.app/api";
-const token = () => localStorage.getItem("access_token") ?? "";
+import * as apiSvc from "./api";
 
-const authPost = (path: string, body: object) =>
-    fetch(`${BASE_URL}${path}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token()}` },
-        body: JSON.stringify(body),
-    });
 
 // ── Key management (kept for Settings UI compatibility, key lives on server) ──
 const API_KEY_LS = "gemini_api_key";
@@ -31,7 +24,7 @@ export interface MatchResult {
 }
 
 export async function generateMatchExplanation(input: MatchInput): Promise<MatchResult> {
-    const res = await authPost("/ai/match-explanation/", {
+    const data = await apiSvc.ai.matchExplanation({
         internship: {
             title: input.internTitle, company: input.company,
             location: input.location, mode: input.mode,
@@ -46,17 +39,12 @@ export async function generateMatchExplanation(input: MatchInput): Promise<Match
         },
     });
 
-    if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error ?? `Backend error: ${res.status}`);
-    }
-
-    const data = await res.json();
     return {
         score: typeof data.score === "number" ? data.score : 0,
         explanation: data.explanation ?? "",
     };
 }
+
 
 // ── Feature 2: Skill Gap Detector ─────────────────────────────────────────────
 export interface GapItem {
@@ -67,14 +55,10 @@ export interface GapItem {
 }
 
 export async function fetchSkillGap(): Promise<GapItem[]> {
-    const res = await authPost("/ai/skill-gap/", {});
-    if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error ?? `Backend error: ${res.status}`);
-    }
-    const data = await res.json();
+    const data = await apiSvc.ai.skillGap();
     return data.gaps ?? [];
 }
+
 
 // ── Feature 3: AI Resume Generator ────────────────────────────────────────────
 export interface ResumeEntry { title: string; sub: string; date: string; desc: string; }
@@ -90,10 +74,6 @@ export async function generateResume(payload: {
     highlight_project: string;
     highlight_experience: string;
 }): Promise<GeneratedResume> {
-    const res = await authPost("/ai/generate-resume/", payload);
-    if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error ?? `Backend error: ${res.status}`);
-    }
-    return await res.json();
+    return await apiSvc.ai.generateResume(payload);
 }
+
