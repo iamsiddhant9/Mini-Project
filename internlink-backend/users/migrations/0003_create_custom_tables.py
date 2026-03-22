@@ -136,7 +136,7 @@ CREATE TABLE IF NOT EXISTS hackathons (
 INSERT INTO users (email, password_hash, name, role, is_active, is_approved, is_verified)
 VALUES (
     'admin@internlink.com',
-    'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3',
+    '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9',
     'Admin', 'admin', TRUE, TRUE, TRUE
 ) ON CONFLICT (email) DO NOTHING;
 """

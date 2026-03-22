@@ -62,15 +62,19 @@ export async function request(endpoint: string, options: RequestInit = {}) {
   let res = await fetch(url, { ...options, headers });
 
   if (res.status === 401) {
-    const refreshed = await refreshAccessToken();
-    if (refreshed) {
-      headers["Authorization"] = `Bearer ${getToken()}`;
-      res = await fetch(url, { ...options, headers });
-    } else {
-      clearTokens();
-      window.location.href = "/#/login";
-      return { error: "Session expired. Please log in again." };
+    // Only try to refresh if we actually have a refresh token (i.e. user was logged in)
+    if (getRefreshToken()) {
+      const refreshed = await refreshAccessToken();
+      if (refreshed) {
+        headers["Authorization"] = `Bearer ${getToken()}`;
+        res = await fetch(url, { ...options, headers });
+      } else {
+        clearTokens();
+        window.location.href = "/#/login";
+        return { error: "Session expired. Please log in again." };
+      }
     }
+    // No refresh token → fall through and return the JSON error from the backend
   }
 
   const contentType = res.headers.get("content-type");
