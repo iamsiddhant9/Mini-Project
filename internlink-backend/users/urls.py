@@ -2,7 +2,8 @@ from django.urls import path
 from .views import (
     RegisterView, LoginView, GoogleAuthView,
     ProfileView, SkillsView, SkillDetailView,
-    StatsView, ComputeMatchScoresView, NotificationListView
+    StatsView, ComputeMatchScoresView, NotificationListView,
+    HealthCheckView,
 )
 
 urlpatterns = [
@@ -15,4 +16,5 @@ urlpatterns = [
     path("users/stats/",           StatsView.as_view(),              name="stats"),
     path("users/compute-matches/", ComputeMatchScoresView.as_view(), name="compute_matches"),
     path("users/notifications/",   NotificationListView.as_view(),   name="notifications"),
+    path("health/",                HealthCheckView.as_view(),        name="health"),
 ]

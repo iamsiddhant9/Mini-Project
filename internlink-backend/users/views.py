@@ -8,6 +8,18 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
+class HealthCheckView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        try:
+            with connection.cursor() as cur:
+                cur.execute("SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY table_name")
+                tables = [r[0] for r in cur.fetchall()]
+            return Response({"status": "ok", "db": "connected", "tables": tables})
+        except Exception as e:
+            return Response({"status": "error", "db": str(e)}, status=500)
+
 def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
 
@@ -82,7 +94,7 @@ class RegisterView(APIView):
                 if "year" in str(e).lower():
                     return Response({"error": "Study year must be between 1 and 5"}, status=400)
                 return Response({"error": f"Invalid data: {str(e)}"}, status=400)
-            return Response({"error": "An internal server error occurred"}, status=500)
+            return Response({"error": f"Register error: {str(e)}"}, status=500)
 
 
 
@@ -114,7 +126,8 @@ class LoginView(APIView):
             tokens = get_tokens(user["id"])
             return Response({"message": "Login successful", "user": user_to_dict(user), "tokens": tokens})
         except Exception as e:
-            return Response({"error": "An internal server error occurred during login"}, status=500)
+            import traceback; traceback.print_exc()
+            return Response({"error": f"Login error: {str(e)}"}, status=500)
 
 
 
@@ -186,7 +199,7 @@ class GoogleAuthView(APIView):
         except Exception as e:
             if "violates check constraint" in str(e).lower():
                 return Response({"error": f"Invalid data: {str(e)}"}, status=400)
-            return Response({"error": "An internal server error occurred during Google Auth"}, status=500)
+            return Response({"error": f"Google auth error: {str(e)}"}, status=500)
 
 
 
