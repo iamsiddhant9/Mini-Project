@@ -8,25 +8,15 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        # Add source_id column (safe to re-run)
         migrations.RunSQL(
-            """
-            -- Add source_id column if it doesn't exist
-            ALTER TABLE internships
-                ADD COLUMN IF NOT EXISTS source_id VARCHAR(200);
-
-            -- Add unique constraint for ON CONFLICT (source, source_id) to work
-            DO $$
-            BEGIN
-                IF NOT EXISTS (
-                    SELECT 1 FROM pg_constraint
-                    WHERE conname = 'internships_source_source_id_key'
-                ) THEN
-                    ALTER TABLE internships
-                        ADD CONSTRAINT internships_source_source_id_key
-                        UNIQUE (source, source_id);
-                END IF;
-            END $$;
-            """,
+            "ALTER TABLE internships ADD COLUMN IF NOT EXISTS source_id VARCHAR(200);",
+            migrations.RunSQL.noop,
+        ),
+        # Add unique index for ON CONFLICT (source, source_id) to work
+        # CREATE UNIQUE INDEX IF NOT EXISTS is safe to re-run
+        migrations.RunSQL(
+            "CREATE UNIQUE INDEX IF NOT EXISTS internships_source_source_id_idx ON internships(source, source_id);",
             migrations.RunSQL.noop,
         ),
     ]
