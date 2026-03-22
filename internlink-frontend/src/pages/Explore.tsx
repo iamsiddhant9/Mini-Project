@@ -2,14 +2,14 @@ import { useState, useEffect, ReactElement } from "react";
 import './Explore.css';
 import { useToast } from "../context/ToastContext";
 import { Search, X, MapPin, Clock, Heart, HeartOff, ChevronDown, AlertTriangle, Loader2, RefreshCw, Check } from "lucide-react";
-import { getToken, getRefreshToken, setTokens, clearTokens } from "../services/api";
+
 
 import * as apiSvc from "../services/api";
 
 
 const CATEGORIES = ["All","AI/ML","Backend","Frontend","Cloud","Mobile","Data","Security","DevOps","Design","Other"];
 const MODES      = ["All","Remote","Hybrid","On-site"];
-const PAGE_SIZE  = 20;
+const PAGE_SIZE  = 10;
 
 interface ApplyModalProps {
   internship: any;
@@ -87,6 +87,7 @@ export default function Explore(): ReactElement {
         limit: PAGE_SIZE,
         offset: newOffset,
       });
+      if (!res || res.error) throw new Error(res?.error || "Failed to load internships");
       const items: any[] = res.internships || res.results || [];
       const total: number = res.total ?? res.count ?? 0;
       setData(prev => replace ? items : [...prev, ...items]);

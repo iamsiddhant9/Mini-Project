@@ -14,26 +14,39 @@ export const clearTokens = () => {
 };
 
 // ── Base Fetch ────────────────────────────────────────────────────────────────
+let refreshPromise: Promise<boolean> | null = null;
+
 async function refreshAccessToken(): Promise<boolean> {
+  // If a refresh is already in progress, reuse it (prevent race conditions)
+  if (refreshPromise) return refreshPromise;
+
   const refresh = getRefreshToken();
   if (!refresh) return false;
-  try {
-    const res = await fetch(`${BASE_URL}/token/refresh/`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refresh }),
-    });
-    if (!res.ok) {
-      console.error(`Token refresh failed: ${res.status} ${res.statusText}`);
+
+  refreshPromise = (async () => {
+    try {
+      const res = await fetch(`${BASE_URL}/token/refresh/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh }),
+      });
+      if (!res.ok) {
+        console.error(`Token refresh failed: ${res.status} ${res.statusText}`);
+        return false;
+      }
+      const data = await res.json();
+      // Save both the new access token AND the rotated refresh token
+      setTokens(data.access, data.refresh || refresh);
+      return true;
+    } catch (error) {
+      console.error("Token refresh error:", error);
       return false;
+    } finally {
+      refreshPromise = null;
     }
-    const data = await res.json();
-    setTokens(data.access, refresh);
-    return true;
-  } catch (error) {
-    console.error("Token refresh error:", error);
-    return false;
-  }
+  })();
+
+  return refreshPromise;
 }
 
 export async function request(endpoint: string, options: RequestInit = {}) {
@@ -55,8 +68,8 @@ export async function request(endpoint: string, options: RequestInit = {}) {
       res = await fetch(url, { ...options, headers });
     } else {
       clearTokens();
-      window.location.href = "/login";
-      return;
+      window.location.href = "/#/login";
+      return { error: "Session expired. Please log in again." };
     }
   }
 
@@ -113,7 +126,10 @@ export const internships = {
     search?: string; category?: string; mode?: string;
     order_by?: string; limit?: number; offset?: number;
   }) => {
-    const query = new URLSearchParams(params as Record<string, string>).toString();
+    const clean = Object.fromEntries(
+      Object.entries(params || {}).filter(([, v]) => v !== undefined && v !== "")
+    );
+    const query = new URLSearchParams(clean as Record<string, string>).toString();
     return request(`/internships/${query ? "?" + query : ""}`);
   },
   detail: (id: number) => request(`/internships/${id}/`),
@@ -147,7 +163,10 @@ export const hackathons = {
     theme?: string; mode?: string; status?: string;
     search?: string; order_by?: string;
   }) => {
-    const query = new URLSearchParams(params as Record<string, string>).toString();
+    const clean = Object.fromEntries(
+      Object.entries(params || {}).filter(([, v]) => v !== undefined && v !== "")
+    );
+    const query = new URLSearchParams(clean as Record<string, string>).toString();
     return request(`/hackathons/${query ? "?" + query : ""}`);
   },
   detail: (id: number) => request(`/hackathons/${id}/`),

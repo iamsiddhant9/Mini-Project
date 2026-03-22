@@ -31,8 +31,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const stored = localStorage.getItem("user");
-    if (stored && apiSvc.getToken()) setUser(JSON.parse(stored));
+    const token  = apiSvc.getToken();
 
+    if (stored && token) {
+      setUser(JSON.parse(stored));
+    } else {
+      apiSvc.clearTokens();
+    }
     setLoading(false);
   }, []);
 
@@ -72,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     apiSvc.clearTokens();
 
     setUser(null);
-    window.location.href = "/login";
+    window.location.href = "/#/login";
   };
 
   return (
