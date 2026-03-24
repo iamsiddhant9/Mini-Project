@@ -1,3 +1,4 @@
+/* ── Header ── */
 .resume-header {
   margin-bottom: 28px;
   animation: fadeUp 0.5s ease;
@@ -23,11 +24,12 @@
 
 .resume-layout {
   display: grid;
-  grid-template-columns: 1fr 380px;
+  grid-template-columns: 1fr 460px;
   gap: 20px;
   animation: fadeUp 0.5s ease 0.1s both;
 }
 
+/* ── Editor Cards ── */
 .section-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -46,51 +48,6 @@
   gap: 8px;
 }
 
-.form-field {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  margin-bottom: 12px;
-}
-
-.form-field label {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-}
-
-.form-field input,
-.form-field textarea {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  padding: 8px 12px;
-  color: var(--text);
-  font-size: 13px;
-  font-family: inherit;
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-.form-field input:focus,
-.form-field textarea:focus {
-  border-color: var(--accent);
-}
-
-.form-field textarea {
-  resize: vertical;
-  min-height: 70px;
-  line-height: 1.5;
-}
-
-.form-row-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
 .entry-card {
   background: var(--surface2);
   border: 1px solid var(--border);
@@ -98,24 +55,6 @@
   padding: 14px;
   margin-bottom: 10px;
   position: relative;
-}
-
-.entry-title {
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.entry-sub {
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 2px;
-}
-
-.entry-desc {
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 6px;
-  line-height: 1.4;
 }
 
 .entry-remove {
@@ -128,9 +67,7 @@
   transition: color 0.2s;
 }
 
-.entry-remove:hover {
-  color: var(--red);
-}
+.entry-remove:hover { color: var(--red); }
 
 .add-btn {
   width: 100%;
@@ -152,7 +89,7 @@
   background: rgba(59, 130, 246, 0.05);
 }
 
-/* Preview */
+/* ── Preview Card (the dark wrapper) ── */
 .preview-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -172,65 +109,144 @@
   justify-content: space-between;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   RESUME PREVIEW — styled to look like a real paper resume
+   ═══════════════════════════════════════════════════════════════ */
 .resume-preview {
-  background: #fff;
-  border-radius: 10px;
-  padding: 24px;
-  color: #111;
-  font-family: 'Times New Roman', Times, serif;
-  font-size: 11px;
-  line-height: 1.5;
-  min-height: 400px;
+  background: #ffffff;
+  border-radius: 4px;
+  padding: 28px 30px;
+  color: #1a1a1a;
+  font-family: 'Georgia', 'Times New Roman', Times, serif;
+  font-size: 10.5px;
+  line-height: 1.45;
+  min-height: 480px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+
+/* Header: name + contact */
+.rp-header {
+  text-align: center;
+  margin-bottom: 5px;
 }
 
 .rp-name {
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'Georgia', serif;
   font-size: 20px;
   font-weight: 700;
-  color: #111;
-  margin-bottom: 2px;
-  letter-spacing: 0.5px;
+  color: #000;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 3px;
 }
 
 .rp-contact {
-  font-size: 10px;
-  color: #64748b;
-  margin-bottom: 12px;
+  font-size: 9px;
+  color: #333;
+  letter-spacing: 0.3px;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Horizontal rule beneath header */
+.rp-hr {
+  border: none;
+  border-top: 1.5px solid #000;
+  margin: 6px 0 4px;
+}
+
+/* Section titles: ALL CAPS, underline with black border */
 .rp-section-title {
-  font-family: 'Times New Roman', Times, serif;
-  font-size: 11px;
+  font-family: 'Georgia', serif;
+  font-size: 10px;
   font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #000;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  color: #3b82f6;
-  border-bottom: 1px solid #e2e8f0;
-  padding-bottom: 3px;
-  margin: 12px 0 6px;
+  border-bottom: 1px solid #000;
+  padding-bottom: 1px;
+  margin: 10px 0 5px;
 }
 
+/* Summary / Objective */
+.rp-summary {
+  font-size: 10px;
+  color: #333;
+  line-height: 1.5;
+  margin: 0 0 2px;
+  font-style: italic;
+}
+
+/* Individual resume entry */
 .rp-entry {
-  margin-bottom: 8px;
+  margin-bottom: 6px;
+}
+
+/* Row: title on left, date on right */
+.rp-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 6px;
 }
 
 .rp-entry-title {
-  font-size: 12px;
+  font-size: 10.5px;
   font-weight: 700;
-  color: #111;
+  color: #000;
+  flex: 1;
 }
 
+/* Inline tech stack for projects: "Project Name | React, Django" */
+.rp-tech {
+  font-weight: 400;
+  color: #333;
+}
+
+.rp-entry-date {
+  font-size: 9.5px;
+  color: #333;
+  white-space: nowrap;
+  font-style: italic;
+  flex-shrink: 0;
+}
+
+/* Company / institution subtitle */
 .rp-entry-sub {
-  font-size: 10px;
-  color: #64748b;
+  font-size: 9.5px;
+  color: #444;
+  font-style: italic;
+  margin-top: 1px;
 }
 
+/* Plain description text (used for education details / GPA) */
 .rp-entry-desc {
   font-size: 10px;
-  color: #374151;
+  color: #333;
   margin-top: 2px;
 }
 
+/* Bullet points for experience & projects */
+.rp-bullet {
+  font-size: 10px;
+  color: #1a1a1a;
+  padding-left: 10px;
+  line-height: 1.5;
+  margin-top: 1px;
+}
+
+/* Skills line */
+.rp-skills-line {
+  font-size: 10px;
+  color: #1a1a1a;
+  line-height: 1.7;
+}
+
+.rp-skills-line strong {
+  font-weight: 700;
+  color: #000;
+}
+
+/* ── Export Button ── */
 .export-btn {
   width: 100%;
   margin-top: 14px;
@@ -244,13 +260,17 @@
   cursor: pointer;
   font-family: inherit;
   transition: opacity 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
-.export-btn:hover {
-  opacity: 0.85;
-}
+.export-btn:hover { opacity: 0.85; }
+.export-btn:disabled { opacity: 0.6; cursor: default; }
 
-@media (max-width: 900px) {
+/* ── Responsive ── */
+@media (max-width: 1000px) {
   .resume-layout {
     grid-template-columns: 1fr;
     display: flex;
@@ -266,10 +286,6 @@
     align-items: flex-start;
     gap: 8px;
   }
-  .resume-header h1 {
-    margin: 10px 0 0;
-  }
-  .resume-header p {
-    margin: 0 0 10px;
-  }
+  .resume-header h1 { margin: 10px 0 0; }
+  .resume-header p  { margin: 0 0 10px; }
 }

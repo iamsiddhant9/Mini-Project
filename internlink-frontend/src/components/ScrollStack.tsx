@@ -129,8 +129,12 @@ const ScrollStack = ({
       const pinEnd = endElementTop - containerHeight / 2;
 
       const scaleProgress = calculateProgress(scrollTop, triggerStart, triggerEnd);
-      const targetScale = baseScale + i * itemScale;
-      const scale = 1 - scaleProgress * (1 - targetScale);
+      // Cap stack depth so scale doesn't degrade past 5 stacked cards
+      const MAX_STACK_DEPTH = 5;
+      const stackIndex = Math.min(i, MAX_STACK_DEPTH);
+      // Clamp targetScale: never let stacked cards grow beyond 1.0 or shrink below 0.82
+      const targetScale = Math.min(1.0, Math.max(0.82, baseScale + stackIndex * itemScale));
+      const scale = Math.max(0.82, 1 - scaleProgress * (1 - targetScale));
       const rotation = rotationAmount ? i * rotationAmount * scaleProgress : 0;
 
       let blur = 0;

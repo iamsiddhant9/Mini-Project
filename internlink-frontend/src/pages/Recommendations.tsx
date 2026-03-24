@@ -250,7 +250,7 @@ export default function Recommendations(): ReactElement {
             : "No internships match your filters"}
         </div>
       ) : (
-        <ScrollStack itemDistance={80} itemScale={0.04} itemStackDistance={20} stackPosition="15%" scaleEndPosition="8%" baseScale={0.88}>
+        <ScrollStack itemDistance={80} itemScale={0.02} itemStackDistance={20} stackPosition="15%" scaleEndPosition="8%" baseScale={0.92}>
           {filtered.map((item) => {
             const icon = CATEGORY_ICONS[item.category] ?? <Briefcase size={20} />;
             const tags: string[] = Array.isArray(item.tags) ? item.tags.filter(Boolean) : [];

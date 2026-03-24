@@ -29,6 +29,7 @@ function App() {
           {/* ── Public only (redirect if logged in) ── */}
           <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
           <Route path="/" element={<PublicRoute><Register /></PublicRoute>} />
+          <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
 
           {/* ── Recruiter only ── */}
           <Route path="/recruiter" element={

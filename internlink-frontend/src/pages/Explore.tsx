@@ -1,4 +1,4 @@
-import { useState, useEffect, ReactElement } from "react";
+import { useState, useEffect, useRef, ReactElement } from "react";
 import './Explore.css';
 import { useToast } from "../context/ToastContext";
 import { Search, X, MapPin, Clock, Heart, HeartOff, ChevronDown, AlertTriangle, Loader2, RefreshCw, Check } from "lucide-react";
@@ -65,6 +65,8 @@ export default function Explore(): ReactElement {
   const [hasMore, setHasMore]         = useState(false);
   const [offset, setOffset]           = useState(0);
   const [totalCount, setTotalCount]   = useState(0);
+  const [sidebarVisible, setSidebarVisible] = useState(true);
+  const sidebarRef = useRef<HTMLDivElement>(null);
 
   const [applied, setApplied]               = useState<Set<number>>(new Set());
   const [applying, setApplying]             = useState(false);
@@ -119,6 +121,18 @@ export default function Explore(): ReactElement {
       const s = res.saved || res || [];
       if (Array.isArray(s)) setSaved(new Set(s.map((i: any) => i.internship_id ?? i.id)));
     });
+  }, []);
+
+  // Detect when sidebar scrolls out of view
+  useEffect(() => {
+    const el = sidebarRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setSidebarVisible(entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
 
 
@@ -243,9 +257,9 @@ export default function Explore(): ReactElement {
         )}
       </div>
 
-      <div className="explore-layout">
+      <div className={`explore-layout${sidebarVisible ? "" : " sidebar-hidden"}`}>
         {/* Sidebar Filters */}
-        <div className="sidebar-filters">
+        <div className="sidebar-filters" ref={sidebarRef}>
           <div className="filter-group">
             <h4>Category</h4>
             {CATEGORIES.map(c => (

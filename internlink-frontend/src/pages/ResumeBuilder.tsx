@@ -101,7 +101,8 @@ export default function ResumeBuilder(): ReactElement {
   const [education,  setEducation]  = useState<Entry[]>(DEFAULT_EDU);
 
   const [profile, setProfile] = useState({
-    name: "", email: "", github: "", linkedin: "", portfolio: "", location: "",
+    name: "", email: "", phone: "", github: "", linkedin: "", portfolio: "", location: "",
+    summary: "",
     skills: [] as string[],
   });
 
@@ -112,6 +113,8 @@ export default function ResumeBuilder(): ReactElement {
       setProfile({
         name:      data.name      ?? "",
         email:     data.email     ?? "",
+        phone:     "",
+        summary:   "",
         github:    data.github_url    ?? "",
         linkedin:  data.linkedin_url  ?? "",
         portfolio: data.portfolio_url ?? "",
@@ -158,8 +161,8 @@ export default function ResumeBuilder(): ReactElement {
     }
   };
 
-  const contactLine = [profile.email, profile.github, profile.linkedin, profile.portfolio, profile.location]
-    .filter(Boolean).join(" · ");
+  const contactParts = [profile.email, profile.phone, profile.linkedin, profile.github, profile.location]
+    .filter(Boolean);
 
   return (
     <>
@@ -208,15 +211,35 @@ export default function ResumeBuilder(): ReactElement {
       <div className="resume-layout">
         {/* Left editor */}
         <div>
+          {/* ── Personal Details card ── */}
+          <div className="section-card">
+            <h3 style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <FileText size={16} /> Personal Details
+            </h3>
+            <Field label="Phone (e.g. +91-9876543210)" value={profile.phone}
+              onChange={v => setProfile(p => ({ ...p, phone: v }))} />
+            <label style={{ fontSize: 10, color: "var(--muted)", fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: 0.5, display: "block", margin: "10px 0 4px" }}>
+              Summary / Objective
+            </label>
+            <textarea
+              value={profile.summary}
+              onChange={e => setProfile(p => ({ ...p, summary: e.target.value }))}
+              placeholder="e.g. Final year CS student with expertise in full-stack development and AI…"
+              rows={2}
+              style={{ width: "100%", background: "transparent", border: "none", borderBottom: "1px dashed rgba(255,255,255,0.1)", color: "var(--text)", fontSize: 12, padding: "2px 0", outline: "none", resize: "none" as const, fontFamily: "inherit", boxSizing: "border-box" as const }}
+            />
+          </div>
+
+          {/* Education first — standard for students */}
+          <Section icon={<GraduationCap size={16} />} title="Education" entries={education}
+            labels={["Degree / Course", "Institution · Location", "Year Range", "Details / GPA"]}
+            onUpdate={updateEdu} onAdd={addEdu} onRemove={removeEdu} />
           <Section icon={<Briefcase size={16} />} title="Experience" entries={experience}
-            labels={["Job Title", "Company · Location", "Date Range", "Description"]}
+            labels={["Job Title", "Company · Location", "Date Range", "Achievements (one per line)"]}
             onUpdate={updateExp} onAdd={addExp} onRemove={removeExp} />
           <Section icon={<Rocket size={16} />} title="Projects" entries={projects}
-            labels={["Project Name", "Tech Stack", "Date", "Description"]}
+            labels={["Project Name", "Tech Stack", "Date", "Description (one per line)"]}
             onUpdate={updateProj} onAdd={addProj} onRemove={removeProj} />
-          <Section icon={<GraduationCap size={16} />} title="Education" entries={education}
-            labels={["Degree / Course", "Institution", "Year Range", "Details / CGPA"]}
-            onUpdate={updateEdu} onAdd={addEdu} onRemove={removeEdu} />
         </div>
 
         {/* Right preview */}
@@ -226,46 +249,91 @@ export default function ResumeBuilder(): ReactElement {
               <FileText size={16} /> Live Preview <span className="ai-badge">Auto-updated</span>
             </h3>
             <div className="resume-preview" ref={previewRef}>
-              <div className="rp-name">{profile.name || "Your Name"}</div>
-              <div className="rp-contact">{contactLine || "Complete your profile to see contact details"}</div>
 
-              {experience.some(e => e.title) && (<>
-                <div className="rp-section-title">EXPERIENCE</div>
-                {experience.filter(e => e.title).map(e => (
-                  <div className="rp-entry" key={e.id}>
-                    <div className="rp-entry-title">{e.title}</div>
-                    {(e.sub || e.date) && <div className="rp-entry-sub">{[e.sub, e.date].filter(Boolean).join(" · ")}</div>}
-                    {e.desc && <div className="rp-entry-desc">{e.desc}</div>}
+              {/* ═══ HEADER ═══ */}
+              <div className="rp-header">
+                <div className="rp-name">{profile.name || "YOUR NAME"}</div>
+                {contactParts.length > 0 && (
+                  <div className="rp-contact">{contactParts.join(" | ")}</div>
+                )}
+              </div>
+              <hr className="rp-hr" />
+
+              {/* ═══ SUMMARY ═══ */}
+              {profile.summary && (
+                <>
+                  <div className="rp-section-title">SUMMARY</div>
+                  <p className="rp-summary">{profile.summary}</p>
+                </>
+              )}
+
+              {/* ═══ EDUCATION ═══ */}
+              {education.some(e => e.title) && (
+                <>
+                  <div className="rp-section-title">EDUCATION</div>
+                  {education.filter(e => e.title).map(e => (
+                    <div className="rp-entry" key={e.id}>
+                      <div className="rp-row">
+                        <span className="rp-entry-title">{e.title}</span>
+                        <span className="rp-entry-date">{e.date}</span>
+                      </div>
+                      {e.sub && <div className="rp-entry-sub">{e.sub}</div>}
+                      {e.desc && <div className="rp-entry-desc">{e.desc}</div>}
+                    </div>
+                  ))}
+                </>
+              )}
+
+              {/* ═══ EXPERIENCE ═══ */}
+              {experience.some(e => e.title) && (
+                <>
+                  <div className="rp-section-title">EXPERIENCE</div>
+                  {experience.filter(e => e.title).map(e => (
+                    <div className="rp-entry" key={e.id}>
+                      <div className="rp-row">
+                        <span className="rp-entry-title">{e.title}</span>
+                        <span className="rp-entry-date">{e.date}</span>
+                      </div>
+                      {e.sub && <div className="rp-entry-sub">{e.sub}</div>}
+                      {e.desc && e.desc.split('\n').filter(Boolean).map((line, i) => (
+                        <div className="rp-bullet" key={i}>• {line}</div>
+                      ))}
+                    </div>
+                  ))}
+                </>
+              )}
+
+              {/* ═══ PROJECTS ═══ */}
+              {projects.some(e => e.title) && (
+                <>
+                  <div className="rp-section-title">PROJECTS</div>
+                  {projects.filter(e => e.title).map(e => (
+                    <div className="rp-entry" key={e.id}>
+                      <div className="rp-row">
+                        <span className="rp-entry-title">
+                          {e.title}
+                          {e.sub && <span className="rp-tech"> | {e.sub}</span>}
+                        </span>
+                        <span className="rp-entry-date">{e.date}</span>
+                      </div>
+                      {e.desc && e.desc.split('\n').filter(Boolean).map((line, i) => (
+                        <div className="rp-bullet" key={i}>• {line}</div>
+                      ))}
+                    </div>
+                  ))}
+                </>
+              )}
+
+              {/* ═══ SKILLS ═══ */}
+              {profile.skills.length > 0 && (
+                <>
+                  <div className="rp-section-title">TECHNICAL SKILLS</div>
+                  <div className="rp-skills-line">
+                    <strong>Skills: </strong>{profile.skills.join(", ")}
                   </div>
-                ))}
-              </>)}
+                </>
+              )}
 
-              {projects.some(e => e.title) && (<>
-                <div className="rp-section-title">PROJECTS</div>
-                {projects.filter(e => e.title).map(e => (
-                  <div className="rp-entry" key={e.id}>
-                    <div className="rp-entry-title">{e.title}</div>
-                    {(e.sub || e.date) && <div className="rp-entry-sub">{[e.sub, e.date].filter(Boolean).join(" · ")}</div>}
-                    {e.desc && <div className="rp-entry-desc">{e.desc}</div>}
-                  </div>
-                ))}
-              </>)}
-
-              {education.some(e => e.title) && (<>
-                <div className="rp-section-title">EDUCATION</div>
-                {education.filter(e => e.title).map(e => (
-                  <div className="rp-entry" key={e.id}>
-                    <div className="rp-entry-title">{e.title}</div>
-                    {(e.sub || e.date) && <div className="rp-entry-sub">{[e.sub, e.date].filter(Boolean).join(" · ")}</div>}
-                    {e.desc && <div className="rp-entry-desc">{e.desc}</div>}
-                  </div>
-                ))}
-              </>)}
-
-              {profile.skills.length > 0 && (<>
-                <div className="rp-section-title">SKILLS</div>
-                <div style={{ fontSize: 10, color: "#374151" }}>{profile.skills.join(" · ")}</div>
-              </>)}
             </div>
 
             <button className="export-btn" style={{ display: "flex", alignItems: "center", gap: 6 }} disabled={exporting}
