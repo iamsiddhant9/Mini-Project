@@ -191,20 +191,22 @@ class ResumeGeneratorView(APIView):
         user_id = request.user.id
         data    = request.data
 
-        # Fetch user profile via raw SQL
+        # Fetch full user profile
         try:
             with connection.cursor() as cur:
                 cur.execute(
-                    "SELECT name, branch, year, university, bio FROM users WHERE id = %s",
+                    """SELECT name, branch, year, university, bio,
+                              github_url, linkedin_url, portfolio_url
+                       FROM users WHERE id = %s""",
                     [user_id]
                 )
                 row = cur.fetchone()
                 if row:
-                    name, branch, year, university, bio = row
+                    name, branch, year, university, bio, github_url, linkedin_url, portfolio_url = row
                 else:
-                    name = branch = year = university = bio = ""
+                    name = branch = year = university = bio = github_url = linkedin_url = portfolio_url = ""
         except Exception:
-            name = branch = year = university = bio = ""
+            name = branch = year = university = bio = github_url = linkedin_url = portfolio_url = ""
 
         # Fetch skills
         try:
@@ -218,55 +220,82 @@ class ResumeGeneratorView(APIView):
         highlight_project    = data.get("highlight_project", "")
         highlight_experience = data.get("highlight_experience", "")
 
-        prompt = f"""
-You are a professional resume writer. Generate a structured resume for this student.
+        # Only generate experience section if the user provided one
+        is_fresher = not highlight_experience.strip()
 
-Student:
+        experience_instruction = (
+            """  "experience": [],"""
+            if is_fresher else
+            f"""  "experience": [
+    {{
+      "title": "<job title / intern role>",
+      "sub": "<company · city>",
+      "date": "<Month Year – Month Year>",
+      "desc": "<line 1 achievement with metric>\\n<line 2 achievement>\\n<line 3 achievement>"
+    }}
+  ],"""
+        )
+
+        prompt = f"""You are an expert resume writer for computer science students applying for internships in India.
+
+Student Profile:
 - Name: {name or 'Student'}
-- Branch: {branch}
-- Year: {year}
-- University: {university}
-- Bio: {bio}
+- Branch: {branch or 'Computer Science'}
+- Year: {year or '3rd'}
+- University: {university or 'Not provided'}
+- Bio: {bio or 'Not provided'}
 - Skills: {', '.join(skills) if skills else 'Not specified'}
+- GitHub: {github_url or 'Not provided'}
+- LinkedIn: {linkedin_url or 'Not provided'}
 - Target Role: {target_role}
 - Key Project: {highlight_project or 'Not provided'}
-- Key Experience: {highlight_experience or 'Not provided'}
+- Prior Experience: {highlight_experience if not is_fresher else 'None (fresher — skip experience section)'}
 
-Generate a complete resume. Respond ONLY with valid JSON:
+Rules for generating the resume:
+1. summary: Write exactly 2 punchy sentences tailored to {target_role}. Mention branch + key skill.
+2. education: Fill from profile data. desc = "CGPA: X.X/10  |  Relevant: <2-3 relevant subjects from branch>".
+3. projects: Generate at least 2 concrete projects. The first must use "{highlight_project or 'a web or AI project'}". The second should be a supporting project that uses different skills from the student's skill list. Each desc must have exactly 3 bullet lines separated by \\n (no bullet characters — those are added automatically). Each line must start with a strong action verb and include a metric or outcome.
+4. experience: {'EMPTY ARRAY — this is a fresher.' if is_fresher else f'Use: {highlight_experience}. 2-3 bullet lines in desc separated by \\n.'}
+5. All dates must be realistic for a year-{year or '3'} student.
+6. desc fields use \\n to separate lines. NO bullet characters (•, -, *). Just plain text per line.
+
+Respond ONLY with this exact valid JSON structure, no extra text:
 {{
-  "summary": "<3-sentence professional summary tailored to {target_role}>",
-  "experience": [
-    {{
-      "title": "<role title>",
-      "sub": "<company or organization>",
-      "date": "<duration or year>",
-      "desc": "<2-3 impactful bullet points as one string, separated by \\n>"
-    }}
-  ],
-  "projects": [
-    {{
-      "title": "<project name>",
-      "sub": "<tech stack used>",
-      "date": "<year>",
-      "desc": "<2-3 bullet points as one string>"
-    }}
-  ],
+  "summary": "<2 sentences>",
   "education": [
     {{
-      "title": "<degree name>",
-      "sub": "<university/college>",
-      "date": "<year range>",
-      "desc": "<relevant coursework or achievements>"
+      "title": "<B.Tech/B.E. + branch>",
+      "sub": "<university> · <city>",
+      "date": "<admission year> – <graduation year>",
+      "desc": "<CGPA or percentage>  |  Relevant: <subjects>"
+    }}
+  ],
+{experience_instruction}
+  "projects": [
+    {{
+      "title": "<Project Name>",
+      "sub": "<Tech Stack e.g. React, Django, PostgreSQL>",
+      "date": "<Month Year>",
+      "desc": "<action verb + what you built + metric>\\n<action verb + technical detail>\\n<action verb + outcome or impact>"
+    }},
+    {{
+      "title": "<Second Project Name>",
+      "sub": "<Different Tech Stack>",
+      "date": "<Month Year>",
+      "desc": "<line 1>\\n<line 2>\\n<line 3>"
     }}
   ]
 }}
-
-Make it concrete, achievement-oriented, and ATS-friendly. Use action verbs. No placeholder text.
 """.strip()
 
         try:
-            raw    = call_groq(prompt, max_tokens=900, temperature=0.5)
+            raw    = call_groq(prompt, max_tokens=1200, temperature=0.4)
             parsed = extract_json(raw)
+
+            # Ensure experience key always exists
+            if "experience" not in parsed:
+                parsed["experience"] = []
+
             return Response(parsed)
         except (ValueError, json.JSONDecodeError) as e:
             return Response({"error": str(e)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)

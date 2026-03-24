@@ -149,6 +149,7 @@ export default function ResumeBuilder(): ReactElement {
         highlight_project:    aiProject,
         highlight_experience: aiExp,
       });
+      if (result.summary)            setProfile(p => ({ ...p, summary: result.summary }));
       if (result.experience?.length) setExperience(result.experience.map((e: any, i: number) => ({ id: Date.now() + i,       ...e })));
       if (result.projects?.length)   setProjects(result.projects.map((e: any, i: number)   => ({ id: Date.now() + 100 + i,   ...e })));
       if (result.education?.length)  setEducation(result.education.map((e: any, i: number)  => ({ id: Date.now() + 200 + i,  ...e })));
@@ -177,9 +178,9 @@ export default function ResumeBuilder(): ReactElement {
               Answer 3 quick questions and Groq will write a tailored resume that fills your builder automatically.
             </p>
             {([
-              { label: "Target Role",          placeholder: "e.g. Backend Engineer Intern at Google",                           value: aiTargetRole, set: setAiTargetRole },
-              { label: "Your Best Project",    placeholder: "e.g. Built a real-time chat app with 500+ users using React",     value: aiProject,    set: setAiProject },
-              { label: "Your Best Experience", placeholder: "e.g. Interned at startup, built REST APIs used by 10k users",     value: aiExp,        set: setAiExp },
+              { label: "Target Role *",         placeholder: "e.g. Backend Engineer Intern at Google",                             value: aiTargetRole, set: setAiTargetRole },
+              { label: "Your Best Project *",   placeholder: "e.g. Built a real-time chat app with 500+ users using React+Node",   value: aiProject,    set: setAiProject },
+              { label: "Work Experience",        placeholder: "Optional for freshers — e.g. Interned at startup, built REST APIs",  value: aiExp,        set: setAiExp },
             ] as { label: string; placeholder: string; value: string; set: (v: string) => void }[]).map(({ label, placeholder, value, set }) => (
               <div key={label} style={{ marginBottom: 14 }}>
                 <label style={{ fontSize: 11, color: "var(--muted)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, display: "block", marginBottom: 5 }}>{label}</label>
