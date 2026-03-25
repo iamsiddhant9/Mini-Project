@@ -51,7 +51,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(res.user);
     
     // Log explicit login event
-    apiSvc.user.logActivity({ event_type: "login" }).catch(() => {});
+    apiSvc.user.logActivity({ 
+      event_type: "login",
+      metadata: { theme: localStorage.getItem("theme") || "system", screen_width: window.innerWidth, os: navigator.platform }
+    }).catch(() => {});
     
     return res.user.role;
   };
@@ -66,7 +69,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(res.user);
     
     // Log explicit login event
-    apiSvc.user.logActivity({ event_type: "login" }).catch(() => {});
+    apiSvc.user.logActivity({ 
+      event_type: "login",
+      metadata: { theme: localStorage.getItem("theme") || "system", screen_width: window.innerWidth, os: navigator.platform }
+    }).catch(() => {});
     
     return res.user.role as string;
   };
@@ -83,7 +89,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     // Log explicit logout event; do it synchronously before clearing tokens
-    apiSvc.user.logActivity({ event_type: "logout" }).catch(() => {}).finally(() => {
+    apiSvc.user.logActivity({ 
+      event_type: "logout",
+      metadata: { session_end: new Date().toISOString() } 
+    }).catch(() => {}).finally(() => {
       apiSvc.clearTokens();
       setUser(null);
       window.location.href = "/#/login";

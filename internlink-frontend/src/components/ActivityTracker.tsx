@@ -17,7 +17,12 @@ export default function ActivityTracker() {
         user.logActivity({
           event_type: "page_visit",
           path: currentPath.current,
-          duration: elapsedSeconds
+          duration: elapsedSeconds,
+          metadata: {
+            theme: localStorage.getItem("theme") || "system",
+            screen_width: window.innerWidth,
+            os: navigator.platform
+          }
         }).catch(err => console.debug("Failed to log activity:", err));
       }
 
@@ -35,10 +40,39 @@ export default function ActivityTracker() {
         user.logActivity({
           event_type: "page_visit",
           path: currentPath.current,
-          duration: elapsedSeconds
+          duration: elapsedSeconds,
+          metadata: { theme: localStorage.getItem("theme") || "system", screen_width: window.innerWidth }
         }).catch(() => {});
       }
     };
+  }, []);
+
+  // Global Click Tracker
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      // Find the closest interactive element to the click target
+      const target = (e.target as Element).closest('button, a, [role="button"], .card-action, .btn, .icon-btn');
+      if (target) {
+        let text = (target as HTMLElement).innerText || target.getAttribute("aria-label") || target.getAttribute("title") || "";
+        text = text.trim().substring(0, 50); // limit length to avoid massive payloads
+        // Extract basic class names for context 
+        const cls = (typeof target.className === "string") ? target.className : "";
+        
+        user.logActivity({
+          event_type: "click",
+          path: window.location.pathname,
+          metadata: {
+            text,
+            class: cls.split(" ")[0], // just take the primary class for brevity
+            tag: target.tagName.toLowerCase(),
+            theme: localStorage.getItem("theme") || "system"
+          }
+        }).catch(() => {});
+      }
+    };
+
+    document.addEventListener("click", handleClick, { capture: true, passive: true });
+    return () => document.removeEventListener("click", handleClick, { capture: true });
   }, []);
 
   return null; // Invisible component

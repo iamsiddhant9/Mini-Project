@@ -438,22 +438,26 @@ class ComputeMatchScoresView(APIView):
         })
 
 
+import json
+
 class UserActivityView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        user_id    = request.user.id
-        event_type = request.data.get("event_type", "").strip()
-        path       = request.data.get("path", "").strip()[:500]
-        duration   = int(request.data.get("duration") or 0)
+        event_type = request.data.get("event_type")
+        path = request.data.get("path", "")
+        duration = request.data.get("duration", 0)
+        metadata = request.data.get("metadata")
 
         if not event_type:
             return Response({"error": "event_type is required"}, status=400)
 
+        metadata_json = json.dumps(metadata) if metadata else None
+
         with connection.cursor() as cur:
             cur.execute("""
-                INSERT INTO user_activity (user_id, event_type, path, duration_seconds)
-                VALUES (%s, %s, %s, %s)
-            """, [user_id, event_type, path, duration])
-
-        return Response({"status": "ok"}, status=201)
+                INSERT INTO user_activity (user_id, event_type, path, duration_seconds, metadata)
+                VALUES (%s, %s, %s, %s, %s)
+            """, [request.user.id, event_type, path, duration, metadata_json])
+        
+        return Response({"message": "Activity logged"}, status=201)

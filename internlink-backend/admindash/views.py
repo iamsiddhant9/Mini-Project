@@ -4,6 +4,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
 
+import json
+
 def rows_to_dicts(cursor):
     columns = [col[0] for col in cursor.description]
     return [{k: (v.isoformat() if hasattr(v, "isoformat") else v) for k, v in zip(columns, row)} for row in cursor.fetchall()]
@@ -223,7 +225,7 @@ class AdminUserDetailView(APIView):
 
             # 5. Activity History (Latest 50 events)
             cur.execute("""
-                SELECT id, event_type, path, duration_seconds, created_at
+                SELECT id, event_type, path, duration_seconds, created_at, metadata
                 FROM user_activity
                 WHERE user_id = %s
                 ORDER BY created_at DESC
@@ -238,6 +240,7 @@ class AdminUserDetailView(APIView):
                     "path": a[2],
                     "duration_seconds": a[3],
                     "created_at": a[4],
+                    "metadata": a[5] if isinstance(a[5], dict) else json.loads(a[5]) if a[5] else None
                 })
 
             # Stats (same as before)ved internships

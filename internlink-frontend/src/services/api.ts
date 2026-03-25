@@ -122,8 +122,12 @@ export const user = {
   getNotifications: () => request("/users/notifications/"),
   markNotificationRead: (id?: number) =>
     request("/users/notifications/", { method: "PATCH", body: JSON.stringify(id ? { id } : {}) }),
-  logActivity: (data: { event_type: string; path?: string; duration?: number }) =>
-    request("/users/activity/", { method: "POST", body: JSON.stringify(data) }),
+  logActivity: async (data: { event_type: string, path?: string, duration?: number, metadata?: any }) => {
+    return request("/users/activity/", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
 };
 
 // ── Internships ───────────────────────────────────────────────────────────────
