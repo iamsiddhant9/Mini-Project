@@ -9,7 +9,7 @@ import './Profile.css';
 interface Skill { id: number; name: string; category: string; level: number; }
 
 export default function Profile(): ReactElement {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const { success, error } = useToast();
 
   const [form, setForm] = useState({
@@ -68,6 +68,13 @@ export default function Profile(): ReactElement {
         bio: form.bio, github_url: form.github,
         linkedin_url: form.linkedin, portfolio_url: form.portfolio,
       });
+      
+      updateUser({
+        name: form.name,
+        branch: form.branch,
+        year: parseInt(form.year) || undefined,
+      });
+
       setSaved(true);
       success("Profile saved successfully!");
       setTimeout(() => setSaved(false), 2000);

@@ -19,8 +19,11 @@ keep your computer running:
 import time
 import urllib.request
 
-# ── EDIT THIS ──────────────────────────────────────────────────────────────────
-BACKEND_URL = "https://YOUR-RENDER-URL.onrender.com/"
+import os
+
+# ── CONFIGURATION ──────────────────────────────────────────────────────────────
+# Automatically uses Render's assigned URL in production, or localhost locally.
+BACKEND_URL = os.environ.get("RENDER_EXTERNAL_URL", "http://localhost:8000/")
 PING_INTERVAL_SECONDS = 600  # 10 minutes — Render sleeps after 15 min
 # ───────────────────────────────────────────────────────────────────────────────
 
@@ -34,8 +37,9 @@ def ping():
 
 
 if __name__ == "__main__":
+    # Wait 20 seconds initially to allow Gunicorn to fully spin up
+    time.sleep(20)
     print(f"Keep-alive started. Pinging {BACKEND_URL} every {PING_INTERVAL_SECONDS // 60} minutes.")
-    print("Press Ctrl+C to stop.\n")
     while True:
         ping()
         time.sleep(PING_INTERVAL_SECONDS)

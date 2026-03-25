@@ -4,7 +4,7 @@ import './AdminDashboard.css';
 import {
   LayoutDashboard, Clock, Users, Briefcase, LogOut,
   GraduationCap, Building2, AlertCircle, CheckCircle, Send, RefreshCw,
-  X, ExternalLink, Github, Linkedin, Globe,
+  X, ExternalLink, Github, Linkedin, Globe, Menu,
 } from "lucide-react";
 
 import * as apiSvc from "../services/api";
@@ -279,6 +279,7 @@ export default function AdminDashboard() {
 
   const [fetching,  setFetching]  = useState(false);
   const [fetchMsg,  setFetchMsg]  = useState("");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Detail drawer
   const [detailUserId, setDetailUserId] = useState<number | null>(null);
@@ -331,16 +332,33 @@ export default function AdminDashboard() {
         <UserDetailDrawer userId={detailUserId} onClose={() => setDetailUserId(null)} />
       )}
 
+      {/* Sidebar Overlay for Mobile */}
+      <div 
+        className={`admin-sidebar-overlay ${mobileMenuOpen ? "open" : ""}`} 
+        onClick={() => setMobileMenuOpen(false)} 
+      />
+
       {/* Sidebar */}
-      <div className="admin-sidebar">
-        <div className="admin-sidebar-logo"><LayoutDashboard size={18} /> Admin Panel</div>
+      <div className={`admin-sidebar ${mobileMenuOpen ? "open" : ""}`}>
+        <div className="admin-sidebar-logo">
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <LayoutDashboard size={18} /> Admin Panel
+          </div>
+          <button className="admin-sidebar-close" onClick={() => setMobileMenuOpen(false)}>
+            <X size={20} />
+          </button>
+        </div>
         {[
           { key: "overview",    icon: <LayoutDashboard size={15} />, label: "Overview",    badge: pending.length > 0 ? pending.length : null },
           { key: "recruiters",  icon: <Clock size={15} />,           label: "Pending",     badge: pending.length > 0 ? pending.length : null },
           { key: "users",       icon: <Users size={15} />,           label: "All Users",   badge: null },
           { key: "internships", icon: <Briefcase size={15} />,       label: "Internships", badge: null },
         ].map(item => (
-          <button key={item.key} onClick={() => setTab(item.key as any)} className={`admin-nav-btn${tab === item.key ? " active" : ""}`}>
+          <button 
+            key={item.key} 
+            onClick={() => { setTab(item.key as any); setMobileMenuOpen(false); }} 
+            className={`admin-nav-btn${tab === item.key ? " active" : ""}`}
+          >
             {item.icon} {item.label}
             {item.badge && <span className="admin-nav-badge">{item.badge}</span>}
           </button>
@@ -351,8 +369,15 @@ export default function AdminDashboard() {
       {/* Main */}
       <div className="admin-main">
         <div className="admin-header">
-          <h1>Hey {user?.name}</h1>
-          <p>Platform overview and management</p>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <button className="admin-hamburger" onClick={() => setMobileMenuOpen(true)}>
+              <Menu size={24} />
+            </button>
+            <div>
+              <h1>Hey {user?.name}</h1>
+              <p>Platform overview and management</p>
+            </div>
+          </div>
         </div>
 
         {/* Overview */}
