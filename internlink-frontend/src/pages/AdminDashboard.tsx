@@ -438,6 +438,10 @@ export default function AdminDashboard() {
                     {u.role === "recruiter" && !u.is_approved && <span className="status-badge pending">Pending</span>}
                   </div>
                   <div className="admin-card-meta">{u.email} · {u.university || "—"} · Year {u.year || "—"}</div>
+                  <div className="admin-card-meta" style={{ marginTop: 6, display: "flex", flexWrap: "wrap", gap: 12, fontSize: 11, background: "rgba(99,179,237,0.04)", padding: "4px 8px", borderRadius: 4, width: "fit-content" }}>
+                    <span><strong style={{ color: "#94a3b8", fontWeight: 600 }}>Joined:</strong> {new Date(u.created_at).toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
+                    {u.last_login && <span><strong style={{ color: "#94a3b8", fontWeight: 600 }}>Last Login:</strong> {new Date(u.last_login).toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</span>}
+                  </div>
                 </div>
                 <div style={{ display: "flex", gap: 8 }}>
                   <button onClick={() => setDetailUserId(u.id)} className="btn-detail">View Details</button>

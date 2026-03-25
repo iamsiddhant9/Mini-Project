@@ -56,18 +56,22 @@ class AdminUsersView(APIView):
         filters = ["1=1"]
         params  = []
         if role:
-            filters.append("role = %s")
+            filters.append("u.role = %s")
             params.append(role)
         if search:
-            filters.append("(LOWER(name) LIKE %s OR LOWER(email) LIKE %s)")
+            filters.append("(LOWER(u.name) LIKE %s OR LOWER(u.email) LIKE %s)")
             params += [f"%{search.lower()}%", f"%{search.lower()}%"]
         where = " AND ".join(filters)
         with connection.cursor() as cur:
             cur.execute(f"""
-                SELECT id, name, email, role, branch, university, year,
-                    is_approved, is_active, is_verified, created_at
-                FROM users WHERE {where}
-                ORDER BY created_at DESC
+                SELECT u.id, u.name, u.email, u.role, u.branch, u.university, u.year,
+                    u.is_approved, u.is_active, u.is_verified, u.created_at,
+                    MAX(a.created_at) as last_login
+                FROM users u
+                LEFT JOIN user_activity a ON a.user_id = u.id AND a.event_type = 'login'
+                WHERE {where}
+                GROUP BY u.id
+                ORDER BY u.created_at DESC
             """, params)
             users = rows_to_dicts(cur)
         return Response(users)
