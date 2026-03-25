@@ -20,8 +20,7 @@ export default function ActivityTracker() {
           duration: elapsedSeconds,
           metadata: {
             theme: localStorage.getItem("theme") || "system",
-            screen_width: window.innerWidth,
-            os: navigator.platform
+            referrer: document.referrer || "Direct"
           }
         }).catch(err => console.debug("Failed to log activity:", err));
       }
@@ -41,7 +40,10 @@ export default function ActivityTracker() {
           event_type: "page_visit",
           path: currentPath.current,
           duration: elapsedSeconds,
-          metadata: { theme: localStorage.getItem("theme") || "system", screen_width: window.innerWidth }
+          metadata: { 
+            theme: localStorage.getItem("theme") || "system", 
+            referrer: document.referrer || "Direct"
+          }
         }).catch(() => {});
       }
     };

@@ -215,10 +215,10 @@ function UserDetailDrawer({ userId, onClose }: { userId: number; onClose: () => 
                     <div style={{ position: "absolute", left: 5, top: 4, bottom: 4, width: 2, background: "rgba(99,179,237,0.1)", borderRadius: 2 }} />
                     {detail.activity.map((act: any) => {
                       let themePill = null;
-                      let osPill = null;
+                      let refPill = null;
                       if (act.metadata && typeof act.metadata === "object") {
                         if (act.metadata.theme) themePill = <span style={{ background: "rgba(255,255,255,0.05)", padding: "1px 6px", borderRadius: 4, border: "1px solid rgba(255,255,255,0.1)" }}>{act.metadata.theme === "dark" ? "🌙 Dark" : act.metadata.theme === "light" ? "☀️ Light" : "💻 System"}</span>;
-                        if (act.metadata.os) osPill = <span style={{ background: "rgba(255,255,255,0.05)", padding: "1px 6px", borderRadius: 4, border: "1px solid rgba(255,255,255,0.1)" }}>{act.metadata.os} {act.metadata.screen_width ? `(${act.metadata.screen_width}px)` : ""}</span>;
+                        if (act.metadata.referrer && act.metadata.referrer !== "Direct") refPill = <span style={{ background: "rgba(255,255,255,0.05)", padding: "1px 6px", borderRadius: 4, border: "1px solid rgba(255,255,255,0.1)", maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={act.metadata.referrer}>🔗 {new URL(act.metadata.referrer).hostname.replace('www.', '')}</span>;
                       }
                       
                       return (
@@ -241,11 +241,11 @@ function UserDetailDrawer({ userId, onClose }: { userId: number; onClose: () => 
                           <div style={{ fontSize: 11, color: "#64748b", marginTop: 4, display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
                             <span>{new Date(act.created_at).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
                             {act.event_type === "page_visit" && act.duration_seconds > 0 && <span>· for {act.duration_seconds >= 60 ? `${Math.floor(act.duration_seconds/60)}m ${act.duration_seconds%60}s` : `${act.duration_seconds}s`}</span>}
-                            {(themePill || osPill) && (
+                            {(themePill || refPill) && (
                               <>
                                 <span style={{ opacity: 0.5 }}>|</span>
                                 {themePill}
-                                {osPill}
+                                {refPill}
                               </>
                             )}
                           </div>

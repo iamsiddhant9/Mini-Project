@@ -53,7 +53,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Log explicit login event
     apiSvc.user.logActivity({ 
       event_type: "login",
-      metadata: { theme: localStorage.getItem("theme") || "system", screen_width: window.innerWidth, os: navigator.platform }
+      metadata: { 
+        theme: localStorage.getItem("theme") || "system", 
+        referrer: document.referrer || "Direct"
+      }
     }).catch(() => {});
     
     return res.user.role;
