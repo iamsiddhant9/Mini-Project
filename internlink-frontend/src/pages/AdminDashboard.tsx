@@ -1,12 +1,220 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import './AdminDashboard.css';
-import { LayoutDashboard, Clock, Users, Briefcase, LogOut, GraduationCap, Building2, AlertCircle, CheckCircle, Send, RefreshCw } from "lucide-react";
-import { getToken, getRefreshToken, setTokens, clearTokens } from "../services/api";
+import {
+  LayoutDashboard, Clock, Users, Briefcase, LogOut,
+  GraduationCap, Building2, AlertCircle, CheckCircle, Send, RefreshCw,
+  X, ExternalLink, Github, Linkedin, Globe,
+} from "lucide-react";
 
 import * as apiSvc from "../services/api";
 
 
+// ────────────────────────────────────────────────────────
+//  User Detail Drawer
+// ────────────────────────────────────────────────────────
+function UserDetailDrawer({ userId, onClose }: { userId: number; onClose: () => void }) {
+  const [detail, setDetail] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    apiSvc.admin.getUserDetail(userId).then((res: any) => {
+      setDetail(res);
+      setLoading(false);
+    });
+  }, [userId]);
+
+  const statusColor: Record<string, string> = {
+    Applied:   "#3b82f6",
+    Interview: "#f59e0b",
+    Offer:     "#10b981",
+    Rejected:  "#ef4444",
+  };
+
+  const initials = (name: string) =>
+    name?.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2) || "?";
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div className="user-detail-backdrop" onClick={onClose} />
+
+      {/* Drawer */}
+      <div className="user-detail-drawer">
+        {loading ? (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#64748b" }}>
+            Loading…
+          </div>
+        ) : detail?.error ? (
+          <div style={{ padding: 32, color: "#ef4444" }}>{detail.error}</div>
+        ) : (
+          <>
+            {/* ── Drawer Header ── */}
+            <div className="drawer-header">
+              <div style={{ display: "flex", alignItems: "center", gap: 14, flex: 1, minWidth: 0 }}>
+                <div className="drawer-avatar">
+                  {initials(detail.profile.name)}
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontWeight: 800, fontSize: 17, color: "#f0f4ff", fontFamily: "Syne, sans-serif" }}>
+                    {detail.profile.name}
+                  </div>
+                  <div style={{ fontSize: 12, color: "#64748b", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {detail.profile.email}
+                  </div>
+                  <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
+                    <span className={`role-badge ${detail.profile.role}`}>{detail.profile.role}</span>
+                    {!detail.profile.is_active && <span className="status-badge inactive">Inactive</span>}
+                    {detail.profile.role === "recruiter" && !detail.profile.is_approved && (
+                      <span className="status-badge pending">Pending</span>
+                    )}
+                    {detail.profile.is_verified && (
+                      <span className="status-badge active">Verified</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <button className="drawer-close-btn" onClick={onClose}><X size={16} /></button>
+            </div>
+
+            {/* ── Stats Row ── */}
+            <div className="drawer-stats-row">
+              {[
+                { label: "Applications", val: detail.stats.total_applications },
+                { label: "Saved",        val: detail.stats.total_saved },
+                { label: "Profile",      val: `${detail.profile.profile_strength ?? 0}%` },
+                { label: "Top Match",    val: `${detail.stats.top_match_score ?? 0}%` },
+              ].map(s => (
+                <div key={s.label} className="drawer-stat">
+                  <div className="drawer-stat-val">{s.val}</div>
+                  <div className="drawer-stat-label">{s.label}</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="drawer-body">
+              {/* ── Profile Info ── */}
+              <div className="drawer-section">
+                <div className="drawer-section-title">Profile</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13, color: "#94a3b8" }}>
+                  {detail.profile.university && (
+                    <div><span style={{ color: "#64748b" }}>University: </span>{detail.profile.university}</div>
+                  )}
+                  {detail.profile.branch && (
+                    <div><span style={{ color: "#64748b" }}>Branch: </span>{detail.profile.branch}{detail.profile.year ? `, Year ${detail.profile.year}` : ""}</div>
+                  )}
+                  {detail.profile.bio && (
+                    <div style={{ color: "#94a3b8", lineHeight: 1.5 }}>{detail.profile.bio}</div>
+                  )}
+                  {detail.profile.created_at && (
+                    <div><span style={{ color: "#64748b" }}>Joined: </span>
+                      {new Date(detail.profile.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                    </div>
+                  )}
+                  <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
+                    {detail.profile.github_url && (
+                      <a href={detail.profile.github_url} target="_blank" rel="noopener noreferrer" style={{ color: "#a78bfa", display: "flex", alignItems: "center", gap: 4, fontSize: 12 }}>
+                        <Github size={13} /> GitHub <ExternalLink size={10} />
+                      </a>
+                    )}
+                    {detail.profile.linkedin_url && (
+                      <a href={detail.profile.linkedin_url} target="_blank" rel="noopener noreferrer" style={{ color: "#3b82f6", display: "flex", alignItems: "center", gap: 4, fontSize: 12 }}>
+                        <Linkedin size={13} /> LinkedIn <ExternalLink size={10} />
+                      </a>
+                    )}
+                    {detail.profile.portfolio_url && (
+                      <a href={detail.profile.portfolio_url} target="_blank" rel="noopener noreferrer" style={{ color: "#10b981", display: "flex", alignItems: "center", gap: 4, fontSize: 12 }}>
+                        <Globe size={13} /> Portfolio <ExternalLink size={10} />
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* ── Skills ── */}
+              {detail.skills.length > 0 && (
+                <div className="drawer-section">
+                  <div className="drawer-section-title">Skills ({detail.skills.length})</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {detail.skills.map((sk: any, i: number) => (
+                      <span key={i} className="skill-pill" style={{ borderColor: sk.color || "#a78bfa", color: sk.color || "#a78bfa" }}>
+                        {sk.name}
+                        {sk.level != null && <span style={{ opacity: 0.6, marginLeft: 4 }}>{sk.level}%</span>}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ── Applications ── */}
+              <div className="drawer-section">
+                <div className="drawer-section-title">
+                  Applications ({detail.stats.total_applications})
+                </div>
+                {detail.applications.length === 0 ? (
+                  <div style={{ color: "#3d4a6b", fontSize: 13 }}>No applications yet.</div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {detail.applications.map((app: any) => (
+                      <div key={app.id} className="drawer-app-row">
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontWeight: 600, fontSize: 13, color: "#e2e8f0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {app.internship_title}
+                          </div>
+                          <div style={{ fontSize: 11, color: "#64748b" }}>
+                            {app.company} · {app.applied_at ? new Date(app.applied_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—"}
+                          </div>
+                        </div>
+                        <span className="app-status-chip" style={{
+                          background: `${statusColor[app.status] || "#64748b"}18`,
+                          color:       statusColor[app.status] || "#64748b",
+                          borderColor: `${statusColor[app.status] || "#64748b"}40`,
+                        }}>
+                          {app.status}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* ── Saved Internships ── */}
+              <div className="drawer-section">
+                <div className="drawer-section-title">
+                  Saved Internships ({detail.stats.total_saved})
+                </div>
+                {detail.saved.length === 0 ? (
+                  <div style={{ color: "#3d4a6b", fontSize: 13 }}>No saved internships.</div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {detail.saved.map((sv: any) => (
+                      <div key={sv.id} className="drawer-app-row">
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontWeight: 600, fontSize: 13, color: "#e2e8f0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {sv.internship_title}
+                          </div>
+                          <div style={{ fontSize: 11, color: "#64748b" }}>
+                            {sv.company} · {sv.saved_at ? new Date(sv.saved_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—"}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </>
+  );
+}
+
+
+// ────────────────────────────────────────────────────────
+//  Admin Dashboard
+// ────────────────────────────────────────────────────────
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
   const [tab, setTab]                 = useState<"overview"|"users"|"recruiters"|"internships">("overview");
@@ -19,6 +227,9 @@ export default function AdminDashboard() {
 
   const [fetching,  setFetching]  = useState(false);
   const [fetchMsg,  setFetchMsg]  = useState("");
+
+  // Detail drawer
+  const [detailUserId, setDetailUserId] = useState<number | null>(null);
 
   useEffect(() => {
     apiSvc.admin.getStats().then(setStats);
@@ -62,6 +273,11 @@ export default function AdminDashboard() {
 
   return (
     <div className="admin-page">
+
+      {/* Detail Drawer */}
+      {detailUserId !== null && (
+        <UserDetailDrawer userId={detailUserId} onClose={() => setDetailUserId(null)} />
+      )}
 
       {/* Sidebar */}
       <div className="admin-sidebar">
@@ -159,6 +375,7 @@ export default function AdminDashboard() {
                   <div className="admin-card-meta">Registered {new Date(r.created_at).toLocaleDateString()}</div>
                 </div>
                 <div style={{ display: "flex", gap: 8 }}>
+                  <button onClick={() => setDetailUserId(r.id)} className="btn-detail">View Details</button>
                   <button onClick={() => approveRecruiter(r.id, "approve")} className="btn-approve"><CheckCircle size={13} style={{ marginRight: 4 }} /> Approve</button>
                   <button onClick={() => approveRecruiter(r.id, "reject")}  className="btn-reject"><AlertCircle size={13} style={{ marginRight: 4 }} /> Reject</button>
                 </div>
@@ -192,6 +409,7 @@ export default function AdminDashboard() {
                   <div className="admin-card-meta">{u.email} · {u.university || "—"} · Year {u.year || "—"}</div>
                 </div>
                 <div style={{ display: "flex", gap: 8 }}>
+                  <button onClick={() => setDetailUserId(u.id)} className="btn-detail">View Details</button>
                   {u.role === "recruiter" && !u.is_approved && (
                     <button onClick={() => approveRecruiter(u.id, "approve")} className="btn-approve">Approve</button>
                   )}

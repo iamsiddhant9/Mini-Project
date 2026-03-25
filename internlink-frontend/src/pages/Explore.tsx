@@ -279,7 +279,7 @@ export default function Explore(): ReactElement {
         </div>
 
         {/* Results */}
-        <div>
+        <div style={{ flex: 1, overflowY: "auto", paddingRight: 2, height: "100%" }}>
           {loading ? (
             <div style={{ color: "var(--muted)", padding: "40px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
               <Loader2 size={24} style={{ animation: "spin 1s linear infinite" }} /> Loading internships...

@@ -169,3 +169,91 @@ class AdminPendingRecruitersView(APIView):
             """)
             pending = rows_to_dicts(cur)
         return Response(pending)
+
+
+class AdminUserDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, user_id):
+        if not is_admin(request):
+            return Response({"error": "Admin access required"}, status=403)
+
+        with connection.cursor() as cur:
+            # Full profile
+            cur.execute("""
+                SELECT id, name, email, role, branch, university, year,
+                       bio, github_url, linkedin_url, portfolio_url,
+                       profile_strength, is_active, is_approved, is_verified,
+                       created_at
+                FROM users WHERE id = %s
+            """, [user_id])
+            row = cur.fetchone()
+            if not row:
+                return Response({"error": "User not found"}, status=404)
+            cols = [d[0] for d in cur.description]
+            profile = {k: (v.isoformat() if hasattr(v, "isoformat") else v)
+                       for k, v in zip(cols, row)}
+
+            # Skills
+            cur.execute("""
+                SELECT t.name, t.category, t.color, us.level
+                FROM user_skills us
+                JOIN tags t ON t.id = us.tag_id
+                WHERE us.user_id = %s
+                ORDER BY us.level DESC
+            """, [user_id])
+            skills = rows_to_dicts(cur)
+
+            # Applications
+            cur.execute("""
+                SELECT a.id, i.title AS internship_title,
+                       COALESCE(c.name, 'Unknown') AS company,
+                       a.status, a.stage, a.applied_at
+                FROM applications a
+                JOIN internships i ON i.id = a.internship_id
+                LEFT JOIN companies c ON c.id = i.company_id
+                WHERE a.user_id = %s
+                ORDER BY a.applied_at DESC
+            """, [user_id])
+            applications = rows_to_dicts(cur)
+
+            # Saved internships
+            cur.execute("""
+                SELECT si.id, i.title AS internship_title,
+                       COALESCE(c.name, 'Unknown') AS company,
+                       si.saved_at
+                FROM saved_internships si
+                JOIN internships i ON i.id = si.internship_id
+                LEFT JOIN companies c ON c.id = i.company_id
+                WHERE si.user_id = %s
+                ORDER BY si.saved_at DESC
+            """, [user_id])
+            saved = rows_to_dicts(cur)
+
+            # Aggregated stats
+            cur.execute("""
+                SELECT status, COUNT(*) FROM applications
+                WHERE user_id = %s GROUP BY status
+            """, [user_id])
+            by_status = {r[0]: r[1] for r in cur.fetchall()}
+
+            cur.execute("SELECT COUNT(*) FROM saved_internships WHERE user_id = %s", [user_id])
+            total_saved = cur.fetchone()[0]
+
+            cur.execute("SELECT MAX(score) FROM match_scores WHERE user_id = %s", [user_id])
+            top_match = cur.fetchone()[0] or 0
+
+        stats = {
+            "total_applications": sum(by_status.values()),
+            "by_status": by_status,
+            "total_saved": total_saved,
+            "top_match_score": top_match,
+        }
+
+        return Response({
+            "profile":      profile,
+            "skills":       skills,
+            "applications": applications,
+            "saved":        saved,
+            "stats":        stats,
+        })

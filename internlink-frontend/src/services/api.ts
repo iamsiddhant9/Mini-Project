@@ -208,6 +208,8 @@ export const admin = {
     request(`/admin-panel/users/${userId}/approve/`, { method: "PATCH", body: JSON.stringify({ action }) }),
   toggleUser: (userId: number) =>
     request(`/admin-panel/users/${userId}/toggle/`, { method: "PATCH", body: JSON.stringify({}) }),
+  getUserDetail: (userId: number) =>
+    request(`/admin-panel/users/${userId}/detail/`),
 };
 
 // ── Jobs ──────────────────────────────────────────────────────────────────────

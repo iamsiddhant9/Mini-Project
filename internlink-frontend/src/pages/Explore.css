@@ -48,26 +48,31 @@
 
 /* ── Layout Structure ── */
 .explore-layout {
-  display: grid;
-  grid-template-columns: 240px 1fr;
+  display: flex;
   gap: 32px;
-  align-items: flex-start;
-  transition: grid-template-columns 0.4s ease;
+  /* Fills remaining height below the header+search inside DashboardLayout's scroll area */
+  height: calc(100vh - 220px);
+  min-height: 400px;
 }
 
-/* When filter sidebar scrolls out of view, collapse it so internships expand */
-.explore-layout.sidebar-hidden {
-  grid-template-columns: 0px 1fr;
-  gap: 0;
-}
-
-/* ── Sidebar Filters ── */
+/* ── Sidebar Filters — sticky, independently scrollable ── */
 .sidebar-filters {
+  width: 220px;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   gap: 24px;
-  overflow: hidden;
+  /* Stick to the top; scroll filter list if it overflows, not the page */
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  max-height: 100%;
+  overflow-y: auto;
+  padding-right: 4px;
 }
+
+.sidebar-filters::-webkit-scrollbar { width: 3px; }
+.sidebar-filters::-webkit-scrollbar-thumb { background: rgba(99,179,237,0.15); border-radius: 3px; }
 
 .filter-group h4 {
   font-family: 'Syne', sans-serif;
@@ -227,12 +232,18 @@
 /* ── Responsive ── */
 @media (max-width: 900px) {
   .explore-layout {
-    grid-template-columns: 1fr;
+    flex-direction: column;
+    height: auto;
   }
   .sidebar-filters {
+    width: 100%;
+    position: static;
     flex-direction: row;
     overflow-x: auto;
+    overflow-y: visible;
+    max-height: none;
     padding-bottom: 10px;
+    padding-right: 0;
   }
 }
 @media (max-width: 768px) {
