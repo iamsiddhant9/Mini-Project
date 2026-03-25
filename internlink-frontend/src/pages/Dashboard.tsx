@@ -296,19 +296,22 @@ export default function Dashboard(): ReactElement {
   }, []);
 
 
-  const handleApply = async (internshipId: number) => {
-    if (applied.has(internshipId)) return;
-    setApplying(internshipId);
+  const handleApply = async (item: any) => {
+    if (applied.has(item.id)) return;
+    setApplying(item.id);
     try {
-      const res = await apiSvc.applications.apply(internshipId);
+      const res = await apiSvc.applications.apply(item.id);
       if (res.error) {
-
         alert(res.error);
         if (res.error.toLowerCase().includes("already applied")) {
-          setApplied(prev => new Set(prev).add(internshipId));
+          setApplied(prev => new Set(prev).add(item.id));
         }
       } else if (res.id || res.message) {
-        setApplied(prev => new Set(prev).add(internshipId));
+        setApplied(prev => new Set(prev).add(item.id));
+        const url = item.source_url || item.apply_url;
+        if (url) {
+          window.open(url, "_blank", "noopener,noreferrer");
+        }
       }
     } catch (err) {
       console.error(err);
@@ -477,7 +480,7 @@ export default function Dashboard(): ReactElement {
                 )}
                 <button
                   className={`apply-btn${isApplied ? " sent" : ""}`}
-                  onClick={(e) => { e.stopPropagation(); handleApply(item.id); }}
+                  onClick={(e) => { e.stopPropagation(); handleApply(item); }}
                   disabled={isApplied || isApplying}
                 >
                   {isApplying ? "..." : isApplied ? <><Check size={12} style={{ display: "inline", marginRight: 3 }} />Sent</> : "Apply"}
