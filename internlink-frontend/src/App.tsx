@@ -3,6 +3,7 @@ import DashboardLayout from "./pages/DashboardLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
 import { ToastProvider } from "./context/ToastContext";
+import ActivityTracker from "./components/ActivityTracker";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -24,6 +25,7 @@ function App() {
   return (
     <ToastProvider>
       <HashRouter>
+        <ActivityTracker />
         <Routes>
 
           {/* ── Public only (redirect if logged in) ── */}

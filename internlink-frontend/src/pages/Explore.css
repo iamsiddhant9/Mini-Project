@@ -50,25 +50,19 @@
 .explore-layout {
   display: flex;
   gap: 32px;
-  /* Fills remaining height below the header+search inside DashboardLayout's scroll area */
-  height: calc(100vh - 220px);
-  min-height: 400px;
+  align-items: flex-start;
 }
 
-/* ── Sidebar Filters — sticky, independently scrollable ── */
+/* ── Sidebar Filters — sticky ── */
 .sidebar-filters {
   width: 220px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   gap: 24px;
-  /* Stick to the top; scroll filter list if it overflows, not the page */
+  /* Stick to the top of the viewport (adjust for header/nav height if needed) */
   position: sticky;
-  top: 0;
-  align-self: flex-start;
-  max-height: 100%;
-  overflow-y: auto;
-  padding-right: 4px;
+  top: 24px;
 }
 
 .sidebar-filters::-webkit-scrollbar { width: 3px; }

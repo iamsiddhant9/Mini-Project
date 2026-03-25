@@ -203,6 +203,37 @@ function UserDetailDrawer({ userId, onClose }: { userId: number; onClose: () => 
                   </div>
                 )}
               </div>
+              {/* ── Activity History ── */}
+              <div className="drawer-section">
+                <div className="drawer-section-title">
+                  Activity History
+                </div>
+                {!detail.activity || detail.activity.length === 0 ? (
+                  <div style={{ color: "#3d4a6b", fontSize: 13 }}>No activity logged yet.</div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10, position: "relative" }}>
+                    <div style={{ position: "absolute", left: 5, top: 4, bottom: 4, width: 2, background: "rgba(99,179,237,0.1)", borderRadius: 2 }} />
+                    {detail.activity.map((act: any) => (
+                      <div key={act.id} style={{ display: "flex", gap: 12, alignItems: "flex-start", position: "relative" }}>
+                        <div style={{ width: 12, height: 12, borderRadius: "50%", background: act.event_type === "login" ? "#10b981" : act.event_type === "logout" ? "#ef4444" : "#3b82f6", border: "2px solid #0e1626", marginTop: 4, flexShrink: 0, zIndex: 1, position: "relative", left: 0 }} />
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <div style={{ fontSize: 13, color: "#e2e8f0", fontWeight: 500 }}>
+                            {act.event_type === "login" && "Logged in"}
+                            {act.event_type === "logout" && "Logged out"}
+                            {act.event_type === "page_visit" && (
+                              <span>Viewed <span style={{ color: "#63b3ed", fontFamily: "monospace", fontSize: 11, background: "rgba(99,179,237,0.1)", padding: "2px 6px", borderRadius: 4 }}>{act.path || "/"}</span></span>
+                            )}
+                          </div>
+                          <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>
+                            {new Date(act.created_at).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                            {act.event_type === "page_visit" && act.duration_seconds > 0 && ` · for ${act.duration_seconds >= 60 ? `${Math.floor(act.duration_seconds/60)}m ${act.duration_seconds%60}s` : `${act.duration_seconds}s`}`}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </>
         )}

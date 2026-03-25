@@ -49,6 +49,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     localStorage.setItem("user", JSON.stringify(res.user));
     setUser(res.user);
+    
+    // Log explicit login event
+    apiSvc.user.logActivity({ event_type: "login" }).catch(() => {});
+    
     return res.user.role;
   };
 
@@ -60,6 +64,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     localStorage.setItem("user", JSON.stringify(res.user));
     setUser(res.user);
+    
+    // Log explicit login event
+    apiSvc.user.logActivity({ event_type: "login" }).catch(() => {});
+    
     return res.user.role as string;
   };
 
@@ -74,10 +82,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
-    apiSvc.clearTokens();
-
-    setUser(null);
-    window.location.href = "/#/login";
+    // Log explicit logout event; do it synchronously before clearing tokens
+    apiSvc.user.logActivity({ event_type: "logout" }).catch(() => {}).finally(() => {
+      apiSvc.clearTokens();
+      setUser(null);
+      window.location.href = "/#/login";
+    });
   };
 
   return (

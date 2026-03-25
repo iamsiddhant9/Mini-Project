@@ -3,7 +3,7 @@ from .views import (
     RegisterView, LoginView, GoogleAuthView,
     ProfileView, SkillsView, SkillDetailView,
     StatsView, ComputeMatchScoresView, NotificationListView,
-    HealthCheckView,
+    HealthCheckView, UserActivityView
 )
 
 urlpatterns = [
@@ -16,5 +16,6 @@ urlpatterns = [
     path("users/stats/",           StatsView.as_view(),              name="stats"),
     path("users/compute-matches/", ComputeMatchScoresView.as_view(), name="compute_matches"),
     path("users/notifications/",   NotificationListView.as_view(),   name="notifications"),
+    path("users/activity/",        UserActivityView.as_view(),       name="user_activity"),
     path("health/",                HealthCheckView.as_view(),        name="health"),
 ]

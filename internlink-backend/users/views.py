@@ -436,3 +436,24 @@ class ComputeMatchScoresView(APIView):
             "top_match_score":  top_match,
             "computed":         computed,
         })
+
+
+class UserActivityView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user_id    = request.user.id
+        event_type = request.data.get("event_type", "").strip()
+        path       = request.data.get("path", "").strip()[:500]
+        duration   = int(request.data.get("duration") or 0)
+
+        if not event_type:
+            return Response({"error": "event_type is required"}, status=400)
+
+        with connection.cursor() as cur:
+            cur.execute("""
+                INSERT INTO user_activity (user_id, event_type, path, duration_seconds)
+                VALUES (%s, %s, %s, %s)
+            """, [user_id, event_type, path, duration])
+
+        return Response({"status": "ok"}, status=201)

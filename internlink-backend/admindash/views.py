@@ -215,9 +215,28 @@ class AdminUserDetailView(APIView):
                 WHERE a.user_id = %s
                 ORDER BY a.applied_at DESC
             """, [user_id])
-            applications = rows_to_dicts(cur)
+            apps = rows_to_dicts(cur)
 
-            # Saved internships
+            # 5. Activity History (Latest 50 events)
+            cur.execute("""
+                SELECT id, event_type, path, duration_seconds, created_at
+                FROM user_activity
+                WHERE user_id = %s
+                ORDER BY created_at DESC
+                LIMIT 50
+            """, [user_id])
+            activity_rows = cur.fetchall()
+            activity_log = []
+            for a in activity_rows:
+                activity_log.append({
+                    "id": a[0],
+                    "event_type": a[1],
+                    "path": a[2],
+                    "duration_seconds": a[3],
+                    "created_at": a[4],
+                })
+
+            # Stats (same as before)ved internships
             cur.execute("""
                 SELECT si.id, i.title AS internship_title,
                        COALESCE(c.name, 'Unknown') AS company,
@@ -253,7 +272,8 @@ class AdminUserDetailView(APIView):
         return Response({
             "profile":      profile,
             "skills":       skills,
-            "applications": applications,
+            "applications": apps,
             "saved":        saved,
+            "activity":     activity_log,
             "stats":        stats,
         })
