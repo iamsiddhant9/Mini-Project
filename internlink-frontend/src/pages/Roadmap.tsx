@@ -1,8 +1,18 @@
 // src/pages/Roadmap.tsx
 import { useState, useEffect } from "react";
 import { ROADMAPS, Roadmap, RoadmapTopic } from "../data/roadmaps";
-import { ExternalLink, CheckCircle2, Circle, Clock, ChevronRight, Map, RotateCcw, Trophy } from "lucide-react";
+import { ExternalLink, CheckCircle2, Circle, Clock, ChevronRight, Map, RotateCcw, Trophy, Globe, Server, Bot, BarChart, Rocket, Shield, Link } from "lucide-react";
 import "./Roadmap.css";
+
+const IconMap: Record<string, React.ReactNode> = {
+  "globe": <Globe size={20} />,
+  "server": <Server size={20} />,
+  "bot": <Bot size={20} />,
+  "bar-chart": <BarChart size={20} />,
+  "rocket": <Rocket size={20} />,
+  "shield": <Shield size={20} />,
+  "link": <Link size={20} />
+};
 
 const LS_KEY = "roadmap_progress_v1";
 
@@ -92,7 +102,7 @@ function RoadmapDetail({ roadmap, progress, onToggle, onReset }: {
       {/* Header */}
       <div className="rm-detail-header" style={{ background: roadmap.gradient }}>
         <div>
-          <div className="rm-detail-icon">{roadmap.icon}</div>
+          <div className="rm-detail-icon">{IconMap[roadmap.icon] || <Map size={36} />}</div>
           <h2 className="rm-detail-title">{roadmap.label} Roadmap</h2>
           <p className="rm-detail-desc">{roadmap.description}</p>
         </div>
@@ -117,7 +127,7 @@ function RoadmapDetail({ roadmap, progress, onToggle, onReset }: {
         <span className="rm-progress-pct">{pct}% complete</span>
         {pct === 100 && (
           <span className="rm-complete-badge">
-            <Trophy size={13} /> Completed! 🎉
+            <Trophy size={13} /> Completed!
           </span>
         )}
       </div>
@@ -209,7 +219,7 @@ export default function RoadmapPage() {
                 onClick={() => setSelected(r)}
                 style={isActive ? { borderColor: r.color, background: `${r.color}12` } : {}}
               >
-                <span className="rm-track-icon">{r.icon}</span>
+                <span className="rm-track-icon">{IconMap[r.icon] || <Map size={20} />}</span>
                 <div className="rm-track-info">
                   <div className="rm-track-name" style={isActive ? { color: r.color } : {}}>{r.label}</div>
                   <div className="rm-track-bar">
@@ -237,14 +247,16 @@ export default function RoadmapPage() {
           />
         ) : (
           <div className="rm-empty">
-            <div className="rm-empty-icon">🗺️</div>
+            <div className="rm-empty-icon"><Map size={56} color="var(--accent)" /></div>
             <h2>Pick a Roadmap</h2>
             <p>Select a learning track from the left to get started.<br />Track your progress topic by topic.</p>
             <div className="rm-empty-grid">
               {ROADMAPS.map(r => (
                 <button key={r.id} className="rm-empty-card" onClick={() => setSelected(r)}
                   style={{ borderColor: `${r.color}30` }}>
-                  <span style={{ fontSize: 28 }}>{r.icon}</span>
+                  <div style={{ color: r.color, marginBottom: 8, display: "flex", justifyContent: "center" }}>
+                    {IconMap[r.icon] || <Map size={28} />}
+                  </div>
                   <div style={{ fontWeight: 700, fontSize: 14, color: "var(--text)", marginTop: 6 }}>{r.label}</div>
                   <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 3 }}>
                     {r.phases.reduce((a, p) => a + p.topics.length, 0)} topics · 4 phases

@@ -120,7 +120,7 @@ class SkillGapView(APIView):
         try:
             with connection.cursor() as cur:
                 cur.execute(
-                    "SELECT name FROM user_skills WHERE user_id = %s",
+                    "SELECT t.name FROM user_skills us JOIN tags t ON us.tag_id = t.id WHERE us.user_id = %s",
                     [user_id]
                 )
                 user_skills = [row[0] for row in cur.fetchall()]

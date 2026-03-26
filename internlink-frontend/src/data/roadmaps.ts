@@ -31,7 +31,7 @@ export const ROADMAPS: Roadmap[] = [
   {
     id: "frontend",
     label: "Frontend",
-    icon: "🖥️",
+    icon: "globe",
     color: "#06b6d4",
     gradient: "linear-gradient(135deg,#3b82f6,#06b6d4)",
     description: "Build modern, responsive web interfaces with industry-standard tools.",
@@ -79,7 +79,7 @@ export const ROADMAPS: Roadmap[] = [
   {
     id: "backend",
     label: "Backend",
-    icon: "⚙️",
+    icon: "server",
     color: "#a78bfa",
     gradient: "linear-gradient(135deg,#6366f1,#a78bfa)",
     description: "Design scalable APIs, manage databases, and build reliable server-side systems.",
@@ -125,9 +125,9 @@ export const ROADMAPS: Roadmap[] = [
 
   // ── AI / ML ────────────────────────────────────────────────────────────────
   {
-    id: "aiml",
+    id: "ai-ml",
     label: "AI / ML",
-    icon: "🧠",
+    icon: "bot",
     color: "#10b981",
     gradient: "linear-gradient(135deg,#10b981,#3b82f6)",
     description: "Master machine learning, deep learning, and practical AI engineering.",
@@ -173,9 +173,9 @@ export const ROADMAPS: Roadmap[] = [
 
   // ── Data Science ───────────────────────────────────────────────────────────
   {
-    id: "data",
+    id: "data-science",
     label: "Data Science",
-    icon: "📊",
+    icon: "bar-chart",
     color: "#fbbf24",
     gradient: "linear-gradient(135deg,#fbbf24,#f59e0b)",
     description: "Turn raw data into actionable insights with analytics and visualisation.",
@@ -223,7 +223,7 @@ export const ROADMAPS: Roadmap[] = [
   {
     id: "devops",
     label: "DevOps",
-    icon: "🚀",
+    icon: "rocket",
     color: "#f43f5e",
     gradient: "linear-gradient(135deg,#f43f5e,#f97316)",
     description: "Automate infrastructure, deployments, and build reliability at scale.",
@@ -271,7 +271,7 @@ export const ROADMAPS: Roadmap[] = [
   {
     id: "cybersec",
     label: "Cybersecurity",
-    icon: "🔐",
+    icon: "shield",
     color: "#ef4444",
     gradient: "linear-gradient(135deg,#ef4444,#7c3aed)",
     description: "Protect systems, networks, and data — one of the highest-demand fields in tech.",
@@ -319,7 +319,7 @@ export const ROADMAPS: Roadmap[] = [
   {
     id: "blockchain",
     label: "Blockchain",
-    icon: "⛓️",
+    icon: "link",
     color: "#f59e0b",
     gradient: "linear-gradient(135deg,#f59e0b,#8b5cf6)",
     description: "Build decentralised apps, smart contracts, and Web3 infrastructure.",
