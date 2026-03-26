@@ -1,15 +1,28 @@
 from django.contrib import admin
 from django.urls import path, include
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from rest_framework_simplejwt.views import TokenRefreshView
+import time
+
+START_TIME = time.time()
 
 
 def ping(request):
     return HttpResponse("ok", content_type="text/plain")
 
 
+def health(request):
+    uptime = int(time.time() - START_TIME)
+    return JsonResponse({
+        "status": "ok",
+        "uptime_seconds": uptime,
+        "uptime_human": f"{uptime // 3600}h {(uptime % 3600) // 60}m {uptime % 60}s",
+    })
+
+
 urlpatterns = [
     path("",                   ping,                            name="ping"),
+    path("api/health/",        health,                          name="health"),
     path("admin/",             admin.site.urls),
     path("api/",               include("users.urls")),
     path("api/",               include("internships.urls")),

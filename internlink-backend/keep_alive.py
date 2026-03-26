@@ -23,7 +23,7 @@ import os
 
 # ── CONFIGURATION ──────────────────────────────────────────────────────────────
 # Automatically uses Render's assigned URL in production, or localhost locally.
-BACKEND_URL = os.environ.get("RENDER_EXTERNAL_URL", "http://localhost:8000/")
+BACKEND_URL = os.environ.get("RENDER_EXTERNAL_URL", "http://localhost:8000/") + "api/health/"
 PING_INTERVAL_SECONDS = 600  # 10 minutes — Render sleeps after 15 min
 # ───────────────────────────────────────────────────────────────────────────────
 
