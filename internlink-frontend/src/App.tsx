@@ -21,6 +21,7 @@ import Settings from "./pages/Settings";
 import Saved from "./pages/Saved";
 import RecruiterDashboard from "./pages/RecruiterDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import Roadmap from "./pages/Roadmap";
 
 function App() {
   return (
@@ -66,6 +67,7 @@ function App() {
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/resources" element={<Resources />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/roadmap" element={<Roadmap />} />
           </Route>
 
         </Routes>

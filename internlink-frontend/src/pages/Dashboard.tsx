@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef, ReactElement } from "react";
+import { useState, useEffect, ReactElement } from "react";
 import { useNavigate } from "react-router-dom";
 import './Dashboard.css';
 import { useAuth } from "../context/AuthContext";
-import { Target, Send, MessageSquare, Sparkles, Search, Bell, Calendar, Brain, Cloud, Smartphone, Bot, Shield, FileText, Star, Heart, Briefcase, ChevronLeft, ChevronRight, X, Check, Mic, Mail, Clock, CheckCircle2 } from "lucide-react";
+import { Target, Send, MessageSquare, Sparkles, Search, Bell, Calendar, Brain, Cloud, Smartphone, Bot, Shield, FileText, Star, Heart, Briefcase, ChevronLeft, ChevronRight, X, Check, CheckCircle2 } from "lucide-react";
 
 import * as apiSvc from "../services/api";
 
@@ -277,12 +277,17 @@ export default function Dashboard(): ReactElement {
       if (Array.isArray(res)) setUserSkills(res.slice(0, 5));
     });
 
-    apiSvc.internships.list({ order_by: "deadline", limit: 50 }).then(res => {
+    apiSvc.internships.list({ order_by: "deadline", limit: 100 }).then(res => {
       const items: any[] = res.internships || res.results || [];
-      const upcoming = items
-        .filter(i => i.deadline && daysUntil(i.deadline) >= 0 && daysUntil(i.deadline) <= 90)
+      // First try: internships with a real deadline in the future
+      let upcoming = items
+        .filter(i => i.deadline && daysUntil(i.deadline) >= 0)
         .sort((a, b) => daysUntil(a.deadline) - daysUntil(b.deadline))
         .slice(0, 5);
+      // Fallback: no deadlines found — show newest internships
+      if (upcoming.length === 0) {
+        upcoming = items.slice(0, 5).map(i => ({ ...i, deadline: null }));
+      }
       setDeadlines(upcoming);
     }).catch(() => {});
 
@@ -613,7 +618,7 @@ export default function Dashboard(): ReactElement {
         {/* ── Upcoming Deadlines — REAL data from /internships/ ── */}
         <div className="card">
           <div className="card-header">
-            <div className="card-title">Upcoming Deadlines</div>
+            <div className="card-title">{deadlines.some(d => d.deadline) ? "Upcoming Deadlines" : "Recently Posted"}</div>
             <span className="card-action" style={{ cursor: "pointer" }} onClick={() => setShowCalendar(true)}>
               Calendar →
             </span>
@@ -621,22 +626,29 @@ export default function Dashboard(): ReactElement {
 
           {deadlines.length === 0 && (
             <div style={{ color: "var(--muted)", fontSize: 13, padding: "12px 0" }}>
-              No upcoming deadlines found.
+              No upcoming internships found.
             </div>
           )}
 
           {deadlines.map((item) => {
-            const days = daysUntil(item.deadline);
-            const d    = new Date(item.deadline);
-            const urgency    = days <= 2 ? "hot"  : days <= 7 ? "warm" : "cool";
-            const dayColor   = days <= 2 ? "var(--red)" : days <= 7 ? "var(--gold)" : undefined;
-            const borderColor= days <= 2 ? "rgba(244,63,94,0.3)" : days <= 7 ? "rgba(251,191,36,0.3)" : undefined;
-            const label      = days === 0 ? "Today!" : days === 1 ? "1d" : `${days}d`;
+            const hasDead = !!item.deadline;
+            const days = hasDead ? daysUntil(item.deadline) : null;
+            const d    = hasDead ? new Date(item.deadline) : null;
+            const urgency    = !hasDead ? "cool" : days! <= 2 ? "hot"  : days! <= 7 ? "warm" : "cool";
+            const dayColor   = !hasDead ? undefined : days! <= 2 ? "var(--red)" : days! <= 7 ? "var(--gold)" : undefined;
+            const borderColor= !hasDead ? undefined : days! <= 2 ? "rgba(244,63,94,0.3)" : days! <= 7 ? "rgba(251,191,36,0.3)" : undefined;
+            const label      = !hasDead ? "New" : days === 0 ? "Today!" : days === 1 ? "1d" : `${days}d`;
             return (
               <div className="deadline-item" key={item.id}>
                 <div className="deadline-date" style={borderColor ? { borderColor } : {}}>
-                  <span className="deadline-day" style={dayColor ? { color: dayColor } : {}}>{String(d.getDate()).padStart(2, "0")}</span>
-                  <span className="deadline-mon">{d.toLocaleString("default", { month: "short" })}</span>
+                  {d ? (
+                    <>
+                      <span className="deadline-day" style={dayColor ? { color: dayColor } : {}}>{String(d.getDate()).padStart(2, "0")}</span>
+                      <span className="deadline-mon">{d.toLocaleString("default", { month: "short" })}</span>
+                    </>
+                  ) : (
+                    <span className="deadline-mon" style={{ fontSize: 9, lineHeight: 1.3 }}>No deadline</span>
+                  )}
                 </div>
                 <div className="deadline-info">
                   <div className="deadline-role">{item.title}</div>

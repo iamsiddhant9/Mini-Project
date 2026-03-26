@@ -3,7 +3,7 @@ import { useState, useEffect, ReactElement } from "react";
 import { user as userApi } from "../services/api";
 import { useToast } from "../context/ToastContext";
 import { Brain, Trophy, AlertTriangle, TrendingDown, Sparkles, Plus, X, Loader2, ExternalLink } from "lucide-react";
-import { fetchSkillGap, GapItem } from "../services/gemini";
+import { fetchSkillGap, GapItem } from "../services/groq";
 import './SkillAnalysis.css';
 
 interface ApiSkill {
@@ -51,7 +51,6 @@ export default function SkillAnalysis(): ReactElement {
   // Skill Gap AI state
   const [gapItems, setGapItems] = useState<GapItem[]>([]);
   const [gapLoading, setGapLoading] = useState(false);
-  const [gapFetched, setGapFetched] = useState(false);
 
   // Add skill form state
   const [newSkill, setNewSkill] = useState("");
@@ -243,29 +242,27 @@ export default function SkillAnalysis(): ReactElement {
           <h3 style={{ display: "flex", alignItems: "center", gap: 8, margin: 0 }}>
             <Sparkles size={16} /> AI Skill Gap Detector <span className="ai-badge">Powered by Groq</span>
           </h3>
-          {!gapFetched && (
-            <button
-              onClick={async () => {
-                setGapLoading(true);
-                setGapFetched(true);
-                try {
-                  const gaps = await fetchSkillGap();
-                  setGapItems(gaps);
-                } catch {
-                  error("Failed to analyze skill gap. Try again.");
-                  setGapFetched(false);
-                } finally { setGapLoading(false); }
-              }}
-              style={{
-                padding: "7px 16px", borderRadius: 8, border: "none", cursor: "pointer",
-                background: "linear-gradient(135deg,var(--accent),var(--accent2))",
-                color: "#fff", fontFamily: "inherit", fontWeight: 700, fontSize: 13,
-                display: "flex", alignItems: "center", gap: 6,
-              }}
-            >
-              <Sparkles size={13} /> Analyze My Gaps
-            </button>
-          )}
+          <button
+            onClick={async () => {
+              setGapLoading(true);
+              setGapItems([]);
+              try {
+                const gaps = await fetchSkillGap();
+                setGapItems(gaps);
+              } catch {
+                error("Failed to analyze skill gap. Try again.");
+              } finally { setGapLoading(false); }
+            }}
+            disabled={gapLoading}
+            style={{
+              padding: "7px 16px", borderRadius: 8, border: "none", cursor: gapLoading ? "default" : "pointer",
+              background: gapLoading ? "rgba(139,92,246,0.3)" : "linear-gradient(135deg,var(--accent),var(--accent2))",
+              color: "#fff", fontFamily: "inherit", fontWeight: 700, fontSize: 13,
+              display: "flex", alignItems: "center", gap: 6,
+            }}
+          >
+            <Sparkles size={13} /> {gapItems.length > 0 ? "Re-analyze" : "Analyze My Gaps"}
+          </button>
         </div>
 
         {gapLoading ? (
@@ -300,11 +297,11 @@ export default function SkillAnalysis(): ReactElement {
               );
             })}
           </div>
-        ) : !gapFetched ? (
+        ) : (
           <p style={{ color: "var(--muted)", fontSize: 13, margin: 0 }}>
             Click <strong>Analyze My Gaps</strong> to see which skills you need to land top internships.
           </p>
-        ) : null}
+        )}
       </div>
     </>
   );

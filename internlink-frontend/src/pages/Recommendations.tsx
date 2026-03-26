@@ -1,7 +1,7 @@
 // src/pages/Recommendations.tsx
 import { useState, useEffect, useRef, ReactElement } from "react";
 import { internships as internshipsApi, applications as applicationsApi, user as userApi } from "../services/api";
-import { generateMatchExplanation } from "../services/gemini";
+import { generateMatchExplanation } from "../services/groq";
 import { useAuth } from "../context/AuthContext";
 import { Sparkles, Search, Clock, Brain, Cloud, Smartphone, Cog, Shield, LayoutDashboard, BarChart2, Briefcase, ChevronDown, ChevronUp, Loader2, Check } from "lucide-react";
 import ScrollStack, { ScrollStackItem } from '../components/ScrollStack';
@@ -155,6 +155,7 @@ export default function Recommendations(): ReactElement {
   const { user } = useAuth();
   const [recs, setRecs] = useState<ApiRec[]>([]);
   const [loading, setLoading] = useState(true);
+  const [matchesReady, setMatchesReady] = useState(false);
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [modeFilter, setModeFilter] = useState("All");
   const [categoryFilter, setCategoryFilter] = useState("All");
@@ -172,10 +173,10 @@ export default function Recommendations(): ReactElement {
   const [applied, setApplied] = useState<Set<number>>(new Set());
 
   useEffect(() => {
-    internshipsApi.recommendations(20).then((data: any) => {
-      setRecs(Array.isArray(data) ? data : []);
-      setLoading(false);
-    }).catch(() => setLoading(false));
+    // Step 1: Recompute match scores against current skills first
+    userApi.computeMatches().catch(() => {}).finally(() => {
+      setMatchesReady(true);
+    });
 
     applicationsApi.list()
       .then((data: any) => {
@@ -192,6 +193,15 @@ export default function Recommendations(): ReactElement {
       setUserSkills((p.skills ?? []).map((s: any) => s.name).filter(Boolean));
     });
   }, []);
+
+  // Step 2: After matches are recomputed, fetch fresh recommendations
+  useEffect(() => {
+    if (!matchesReady) return;
+    internshipsApi.recommendations(20).then((data: any) => {
+      setRecs(Array.isArray(data) ? data : []);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, [matchesReady]);
 
   const filtered = recs
     .filter((i) => modeFilter === "All" || i.mode === modeFilter)

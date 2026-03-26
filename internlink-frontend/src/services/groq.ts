@@ -1,4 +1,4 @@
-// src/services/gemini.ts
+// src/services/groq.ts
 // AI service — calls Django backend (Groq/Llama). API key is server-side.
 
 import * as apiSvc from "./api";
