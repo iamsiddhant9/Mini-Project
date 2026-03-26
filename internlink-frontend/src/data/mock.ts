@@ -60,7 +60,6 @@ export const navGroups: NavGroup[] = [
     items: [
       { icon: "user",        label: "My Profile",       path: "/profile" },
       { icon: "brain",       label: "Skill Analysis",   path: "/skills" },
-      { icon: "map",         label: "Roadmaps",         path: "/roadmap" },
       { icon: "heart",       label: "Saved",            path: "/saved", badge: 7, badgeClass: "green" },
       { icon: "file",        label: "Resume Builder",   path: "/resume" },
     ],

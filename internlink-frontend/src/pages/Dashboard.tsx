@@ -2,7 +2,7 @@ import { useState, useEffect, ReactElement } from "react";
 import { useNavigate } from "react-router-dom";
 import './Dashboard.css';
 import { useAuth } from "../context/AuthContext";
-import { Target, Send, MessageSquare, Sparkles, Search, Bell, Calendar, Brain, Cloud, Smartphone, Bot, Shield, FileText, Star, Heart, Briefcase, ChevronLeft, ChevronRight, X, Check, CheckCircle2 } from "lucide-react";
+import { Target, Send, MessageSquare, Sparkles, Search, Bell, Calendar, Brain, Cloud, Smartphone, Bot, Shield, FileText, Star, Heart, Briefcase, ChevronLeft, ChevronRight, X, Check, Map, CheckCircle2 } from "lucide-react";
 
 import * as apiSvc from "../services/api";
 
@@ -566,6 +566,30 @@ export default function Dashboard(): ReactElement {
                 );
               })}
             </div>
+          </div>
+
+          {/* Roadmaps Box */}
+          <div className="card" style={{ background: "linear-gradient(135deg,rgba(59,130,246,0.05),rgba(6,182,212,0.05))", border: "1px solid rgba(59,130,246,0.2)" }}>
+            <div className="card-header" style={{ marginBottom: 12 }}>
+              <div className="card-title" style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--accent)" }}>
+                <Map size={16} /> Learning Roadmaps
+              </div>
+            </div>
+            <p style={{ fontSize: 13, color: "var(--muted)", margin: "0 0 16px", lineHeight: 1.5 }}>
+              Level up your skills with curated tracks for Frontend, Backend, AI/ML, and more. Track your progress step-by-step.
+            </p>
+            <button
+              onClick={() => navigate("/roadmap")}
+              style={{
+                width: "100%", padding: "10px", borderRadius: 10, border: "none", cursor: "pointer",
+                background: "linear-gradient(135deg,var(--accent),var(--accent2))",
+                color: "#fff", fontFamily: "inherit", fontWeight: 700, fontSize: 13,
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                boxShadow: "0 4px 12px rgba(59,130,246,0.3)"
+              }}
+            >
+              Explore Roadmaps <ChevronRight size={14} />
+            </button>
           </div>
         </div>
       </div>
