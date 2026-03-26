@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useCallback, memo, ReactElement } from "re
 import { useAuth } from "../context/AuthContext";
 import { user as userApi } from "../services/api";
 import { useToast } from "../context/ToastContext";
-import { generateResume } from "../services/gemini";
+import { generateResume } from "../services/groq";
 import { FileText, Briefcase, Rocket, GraduationCap, Plus, X, Download, Loader2, Sparkles } from "lucide-react";
 import './ResumeBuilder.css';
 
