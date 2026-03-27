@@ -1,0 +1,35 @@
+name: Keep Server Awake
+
+on:
+  schedule:
+    # Runs every 10 minutes
+    - cron: '*/10 * * * *'
+  # Allows you to trigger it manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render Backend
+        run: |
+          # The RENDER_URL should be added to your repository's Settings > Secrets and variables > Actions
+          # Example: https://internlink-backend.onrender.com
+          URL="${{ secrets.RENDER_URL }}"
+          if [ -z "$URL" ]; then
+            echo "Error: RENDER_URL secret is not set!"
+            echo "Please go to Settings > Secrets and variables > Actions and add a repository secret named RENDER_URL."
+            exit 1
+          fi
+          
+          echo "Pinging $URL/api/health/ to keep server awake..."
+          
+          # Fetch the page with a timeout of 15 seconds
+          STATUS=$(curl -o /dev/null -s -w "%{http_code}\n" --max-time 15 "$URL/api/health/")
+          
+          if [ "$STATUS" -eq 200 ] || [ "$STATUS" -eq 301 ] || [ "$STATUS" -eq 302 ]; then
+            echo "Ping successful (Status: $STATUS)"
+          else
+            echo "Ping received unexpected status: $STATUS"
+            # We don't exit 1 here so it doesn't spam failure emails if it's just waking up
+          fi
