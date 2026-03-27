@@ -33,8 +33,16 @@ export default function ServerStatus() {
     // Start ticking counter
     timerRef.current = setInterval(() => setSeconds(s => s + 1), 1000);
 
+    // Ping every 5 minutes to keep backend awake while the tab is open
+    const keepAliveTimer = setInterval(() => {
+      fetch(HEALTH_URL).catch(() => {});
+    }, 5 * 60 * 1000);
+
     doCheck();
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+    return () => { 
+      if (timerRef.current) clearInterval(timerRef.current); 
+      clearInterval(keepAliveTimer);
+    };
   }, []);
 
   if (status === "online" || status === "checking" && seconds < 3) return null;
