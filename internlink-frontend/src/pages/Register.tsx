@@ -180,7 +180,11 @@ export default function Register() {
                         onKeyDown={handleSkillKeyDown}
                       />
                     </div>
-                    <p style={{ fontSize: "12px", color: "#94a3b8", marginTop: "4px", marginBottom: "8px" }}>Click on Enter after typing the skill to add skill</p>
+                    <p className="skill-hint-text">
+                      {"Click on Enter after typing the skill to add skill".split(" ").map((word, i) => (
+                        <span key={i} style={{ animationDelay: `${i * 0.25}s` }}>{word}&nbsp;</span>
+                      ))}
+                    </p>
                     {skillError && <p className="skill-error">{skillError}</p>}
                   </>
                 )}
