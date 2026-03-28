@@ -1,10 +1,7 @@
 import hashlib
 import os
-import threading
 import requests as http_requests
-from django.conf import settings
 from django.db import connection
-from django.core.mail import send_mail
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -91,21 +88,6 @@ class RegisterView(APIView):
                 user = dict(zip(cols, row))
 
             tokens = get_tokens(user["id"])
-
-            def send_welcome_email(user_email, user_name):
-                try:
-                    send_mail(
-                        subject="Welcome to InternLink! 🎉",
-                        message=f"Hi {user_name},\n\nWelcome to Internlink! We're excited to have you on board.\nMay you have a successful career and a happier life ahead ❤️.\n\nBest regards,\nThe Internlink Team",
-                        from_email=getattr(settings, "EMAIL_HOST_USER", "noreply@internlink.com") or "noreply@internlink.com",
-                        recipient_list=[user_email],
-                        fail_silently=True,
-                    )
-                except Exception as e:
-                    print(f"Failed to send email to {user_email}: {e}")
-
-            threading.Thread(target=send_welcome_email, args=(email, name)).start()
-
             return Response({"message": "Account created successfully", "user": user_to_dict(user), "tokens": tokens}, status=201)
         except Exception as e:
             if "violates check constraint" in str(e).lower():
