@@ -387,11 +387,12 @@
   .login-card { max-width: 100%; }
 }
 
-/* ── Skill Hint Flash Animation ── */
-@keyframes word-flash {
-  0% { color: #94a3b8; text-shadow: none; transform: scale(1) translateY(0); }
-  30% { color: #fbbf24; text-shadow: 0 0 8px rgba(251, 191, 36, 0.6); transform: scale(1.15) translateY(-2px); }
-  100% { color: #94a3b8; text-shadow: none; transform: scale(1) translateY(0); }
+/* ── Skill Hint Highlight Animation ── */
+@keyframes word-highlight {
+  0%   { color: #94a3b8; text-shadow: none; }
+  15%  { color: #fbbf24; text-shadow: 0 0 10px rgba(251, 191, 36, 0.5); }
+  70%  { color: #fbbf24; text-shadow: 0 0 10px rgba(251, 191, 36, 0.4); }
+  100% { color: #94a3b8; text-shadow: none; }
 }
 
 .skill-hint-text {
@@ -404,6 +405,6 @@
 
 .skill-hint-text span {
   display: inline-block;
-  transform-origin: center;
-  animation: word-flash 2.0s ease-in-out both;
+  animation: word-highlight 3s ease-in-out both;
+  animation-fill-mode: forwards;
 }

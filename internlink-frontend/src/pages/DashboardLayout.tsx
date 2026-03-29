@@ -6,8 +6,8 @@ import './DashboardLayout.css';
 import { useAuth } from "../context/AuthContext";
 import {
   LayoutDashboard, Target, Search, BookOpen, User, Brain,
-  Bookmark, FileText, BarChart3, Briefcase, Settings,
-  LogOut, Menu, X
+  FileText, BarChart3, Briefcase, Settings,
+  LogOut, Menu, X, GraduationCap
 } from "lucide-react";
 import { ModeToggle } from "../components/ModeToggle";
 
@@ -23,7 +23,7 @@ const pathToLabel: Record<string, string> = {
   "/profile": "My Profile", "/skillAnalysis": "Skill Analysis",
   "/saved": "Saved", "/resumeBuilder": "Resume Builder",
   "/analytics": "Analytics", "/applications": "Applications",
-  "/settings": "Settings",
+  "/settings": "Settings", "/careercoach": "Career Coach",
 };
 
 export default function DashboardLayout(): ReactElement {
@@ -36,7 +36,6 @@ export default function DashboardLayout(): ReactElement {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [recCount,    setRecCount]    = useState<number | undefined>(undefined);
   const [appCount,    setAppCount]    = useState<number | undefined>(undefined);
-  const [savedCount,  setSavedCount]  = useState<number | undefined>(undefined);
 
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth <= 768);
@@ -61,10 +60,7 @@ export default function DashboardLayout(): ReactElement {
       if (!res?.error) { const act = (res?.interview ?? 0) + (res?.offer ?? 0); setAppCount(act); }
     }).catch(() => {});
 
-    apiSvc.saved.list().then(res => {
-      const l = Array.isArray(res) ? res : (res?.saved ?? res?.results ?? []);
-      if (l.length > 0) setSavedCount(l.length);
-    }).catch(() => {});
+    apiSvc.saved.list().catch(() => {});
 
   }, []);
 
@@ -76,10 +72,10 @@ export default function DashboardLayout(): ReactElement {
       { icon: <BookOpen size={18} />,        label: "Resources",       path: "/resources" },
     ]},
     { label: "Profile", items: [
-      { icon: <User size={18} />,     label: "My Profile",    path: "/profile" },
-      { icon: <Brain size={18} />,    label: "Skill Analysis",path: "/skillAnalysis" },
-      { icon: <Bookmark size={18} />, label: "Saved",         path: "/saved", ...(savedCount ? { badge: savedCount, badgeClass: "green" } : {}) },
-      { icon: <FileText size={18} />, label: "Resume Builder",path: "/resumeBuilder" },
+      { icon: <User size={18} />,           label: "My Profile",    path: "/profile" },
+      { icon: <Brain size={18} />,          label: "Skill Analysis",path: "/skillAnalysis" },
+      { icon: <GraduationCap size={18} />,  label: "Career Coach",  path: "/careercoach" },
+      { icon: <FileText size={18} />,       label: "Resume Builder",path: "/resumeBuilder" },
     ]},
     { label: "Insights", items: [
       { icon: <BarChart3 size={18} />, label: "Analytics",   path: "/analytics" },

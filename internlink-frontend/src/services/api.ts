@@ -198,6 +198,10 @@ export const ai = {
   matchExplanation: (data: any) => request("/ai/match-explanation/", { method: "POST", body: JSON.stringify(data) }),
   skillGap: () => request("/ai/skill-gap/", { method: "POST", body: JSON.stringify({}) }),
   generateResume: (data: any) => request("/ai/generate-resume/", { method: "POST", body: JSON.stringify(data) }),
+  careerCoach: (messages: { role: string; content: string }[]) =>
+    request("/ai/career-coach/", { method: "POST", body: JSON.stringify({ messages }) }),
+  generateRoadmap: (messages: { role: string; content: string }[]) =>
+    request("/ai/generate-roadmap/", { method: "POST", body: JSON.stringify({ messages }) }),
 };
 
 

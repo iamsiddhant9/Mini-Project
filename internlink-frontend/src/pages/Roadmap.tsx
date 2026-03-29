@@ -1,7 +1,8 @@
-// src/pages/Roadmap.tsx
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { ROADMAPS, Roadmap, RoadmapTopic } from "../data/roadmaps";
 import { ExternalLink, CheckCircle2, Circle, Clock, ChevronRight, Map, RotateCcw, Trophy, Globe, Server, Bot, BarChart, Rocket, Shield, Link } from "lucide-react";
+import * as apiSvc from "../services/api";
 import "./Roadmap.css";
 
 const IconMap: Record<string, React.ReactNode> = {
@@ -170,8 +171,37 @@ function RoadmapDetail({ roadmap, progress, onToggle, onReset }: {
 }
 
 export default function RoadmapPage() {
+  const location = useLocation();
+  const [localRoadmaps, setLocalRoadmaps] = useState<Roadmap[]>(ROADMAPS);
   const [selected, setSelected] = useState<Roadmap | null>(null);
   const [progress, setProgress] = useState<Record<string, Status>>(loadProgress);
+  const [loadingAi, setLoadingAi] = useState(false);
+  const [aiError, setAiError] = useState("");
+
+  useEffect(() => {
+    const history = location.state?.history;
+    if (history && !loadingAi) {
+      // Clear state so a page refresh doesn't trigger another generation
+      window.history.replaceState({}, document.title);
+      
+      setLoadingAi(true);
+      setAiError("");
+      
+      apiSvc.ai.generateRoadmap(history)
+        .then((res: any) => {
+          if (res.error) throw new Error(res.error);
+          const newMap = res as Roadmap;
+          setLocalRoadmaps(prev => [newMap, ...prev]);
+          setSelected(newMap);
+        })
+        .catch((err: any) => {
+          setAiError(err.message || "Failed to generate roadmap.");
+        })
+        .finally(() => {
+          setLoadingAi(false);
+        });
+    }
+  }, [location.state]);
 
   useEffect(() => { saveProgress(progress); }, [progress]);
 
@@ -209,7 +239,7 @@ export default function RoadmapPage() {
           7 curated tracks — click a topic to track your progress.
         </p>
         <div className="rm-track-list">
-          {ROADMAPS.map(r => {
+          {localRoadmaps.map(r => {
             const pct = getCompletionPct(r);
             const isActive = selected?.id === r.id;
             return (
@@ -238,7 +268,21 @@ export default function RoadmapPage() {
 
       {/* Content */}
       <div className="rm-content">
-        {selected ? (
+        {loadingAi ? (
+          <div className="rm-empty">
+            <div className="rm-empty-icon" style={{ animation: "pulse 2s infinite" }}>
+              <Bot size={56} color="var(--accent)" />
+            </div>
+            <h2>Generating your Custom Roadmap...</h2>
+            <p>Sid is analyzing your profile to build a personalized 4-phase learning path.<br />This usually takes 8-10 seconds.</p>
+          </div>
+        ) : aiError ? (
+          <div className="rm-empty">
+            <div className="rm-empty-icon"><RotateCcw size={40} color="#f43f5e" /></div>
+            <h2 style={{ color: "#f43f5e" }}>Generation Failed</h2>
+            <p>{aiError}</p>
+          </div>
+        ) : selected ? (
           <RoadmapDetail
             roadmap={selected}
             progress={progress}
@@ -251,7 +295,7 @@ export default function RoadmapPage() {
             <h2>Pick a Roadmap</h2>
             <p>Select a learning track from the left to get started.<br />Track your progress topic by topic.</p>
             <div className="rm-empty-grid">
-              {ROADMAPS.map(r => (
+              {localRoadmaps.slice(0, 4).map(r => (
                 <button key={r.id} className="rm-empty-card" onClick={() => setSelected(r)}
                   style={{ borderColor: `${r.color}30` }}>
                   <div style={{ color: r.color, marginBottom: 8, display: "flex", justifyContent: "center" }}>

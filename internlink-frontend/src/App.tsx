@@ -22,6 +22,7 @@ import Saved from "./pages/Saved";
 import RecruiterDashboard from "./pages/RecruiterDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import Roadmap from "./pages/Roadmap";
+import CareerCoach from "./pages/CareerCoach";
 
 function App() {
   return (
@@ -68,6 +69,7 @@ function App() {
             <Route path="/resources" element={<Resources />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/roadmap" element={<Roadmap />} />
+            <Route path="/careercoach" element={<CareerCoach />} />
           </Route>
 
         </Routes>

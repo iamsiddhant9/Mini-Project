@@ -1,6 +1,7 @@
 # ai/views.py
 # Uses Groq API (OpenAI-compatible) with llama-3.3-70b-versatile
 # Free tier: 14,400 requests/day — no billing required
+# Includes: MatchExplanation, SkillGap, ResumeGenerator, CareerCoach
 
 import os
 import json
@@ -18,7 +19,7 @@ GROQ_MODEL   = "llama-3.3-70b-versatile"
 
 
 def call_groq(prompt: str, max_tokens: int = 400, temperature: float = 0.7) -> str:
-    """Call Groq API and return generated text."""
+    """Call Groq API and return generated text (single-turn)."""
     api_key = os.environ.get("GROQ_API_KEY") or getattr(settings, "GROQ_API_KEY", "")
     if not api_key:
         raise ValueError("GROQ_API_KEY not configured in server environment.")
@@ -33,6 +34,31 @@ def call_groq(prompt: str, max_tokens: int = 400, temperature: float = 0.7) -> s
             "temperature": temperature,
         },
         timeout=20,
+    )
+
+    if not resp.ok:
+        msg = resp.json().get("error", {}).get("message", f"HTTP {resp.status_code}")
+        raise ValueError(f"Groq error: {msg}")
+
+    return resp.json()["choices"][0]["message"]["content"].strip()
+
+
+def call_groq_chat(messages: list, max_tokens: int = 800, temperature: float = 0.8) -> str:
+    """Call Groq API with a full multi-turn messages list."""
+    api_key = os.environ.get("GROQ_API_KEY") or getattr(settings, "GROQ_API_KEY", "")
+    if not api_key:
+        raise ValueError("GROQ_API_KEY not configured in server environment.")
+
+    resp = http_requests.post(
+        GROQ_API_URL,
+        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+        json={
+            "model": GROQ_MODEL,
+            "messages": messages,
+            "max_tokens": max_tokens,
+            "temperature": temperature,
+        },
+        timeout=30,
     )
 
     if not resp.ok:
@@ -304,3 +330,165 @@ Respond ONLY with this exact valid JSON structure, no extra text:
             return Response({"error": str(e)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
         except Exception as e:
             return Response({"error": f"Unexpected error: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# ── Feature 4: AI Career Coach (multi-turn chat) ────────────────────────────────
+
+COACH_SYSTEM_PROMPT = """You are Sid, a brilliant, warm, and highly efficient AI career counselor on InternLink.
+
+Your personality:
+- Friendly, upbeat, and encouraging
+- Fast and to-the-point: do not engage in endless chatting like a standard AI. Get straight to the value.
+
+CRITICAL FORMATTING RULES:
+1. NEVER WRITE PARAGRAPHS. EVER. Every single sentence you write MUST be a short bullet point, or a header.
+2. Provide actionable advice and a clear career direction as FAST as possible. Do not ask multiple questions before giving advice.
+3. If they have a profile, immediately say: "Based on your background, here is a highly recommended path..." and offer a quick overview.
+4. If they want to get more precise or change direction, THEN ask deep follow-up questions (in bullet points).
+5. Always provide 2 to 4 clickable options for the user so they can quickly reply without typing. Format them EXACTLY as `[Option: <option text>]`. Example: `[Option: Tell me more about AI]`. Do not add bullets before `[Option: ...]`.
+6. Whenever you give a full roadmap or heavy advice, you MUST include the exact text `[VISUAL_ROADMAP]` on its own line at the very end of your message. This triggers a special interactive UI for the user.
+
+When giving a final roadmap, use this structure:
+   ## 🎯 Your Career Path: [Career Name]
+   - **Why this suits you:** ...
+   - **Skills to learn:** ...
+   - **Projects to build:** ...
+   - **Internships to target:** ...
+   - **Future scope:** ...
+   - **💪 You've got this!** [motivating message]
+   
+   [VISUAL_ROADMAP]
+
+Do NOT give generic advice. Be specific to what the student shared."""
+
+
+class CareerCoachView(APIView):
+    """POST /api/ai/career-coach/
+    Body: { messages: [{role: 'user'|'assistant', content: '...'}] }
+    Returns: { reply: '...' }
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user    = request.user
+        history = request.data.get("messages", [])
+
+        # Fetch user profile for personalised context
+        try:
+            with connection.cursor() as cur:
+                cur.execute(
+                    "SELECT name, branch, year, bio FROM users WHERE id = %s",
+                    [user.id]
+                )
+                row    = cur.fetchone()
+                name   = row[0] if row else (user.get_full_name() or user.username)
+                branch = row[1] if row else ""
+                year   = row[2] if row else ""
+                bio    = row[3] if row else ""
+        except Exception:
+            name   = user.get_full_name() or user.username
+            branch = year = bio = ""
+
+        try:
+            with connection.cursor() as cur:
+                cur.execute(
+                    "SELECT t.name FROM user_skills us JOIN tags t ON us.tag_id = t.id WHERE us.user_id = %s",
+                    [user.id]
+                )
+                skills = [r[0] for r in cur.fetchall()]
+        except Exception:
+            skills = []
+
+        profile_block = (
+            "Student profile you are counseling:\n"
+            "- Name: " + str(name) + "\n"
+            "- Branch: " + (branch or "Not specified") + "\n"
+            "- Year: " + (str(year) if year else "Not specified") + "\n"
+            "- Existing Skills: " + (", ".join(skills) if skills else "None listed yet") + "\n"
+            "- Bio: " + (bio or "Not provided") + "\n"
+            "Use this context to personalize your advice. If they have no skills, be extra encouraging."
+        )
+
+        messages = [
+            {"role": "system", "content": COACH_SYSTEM_PROMPT},
+            {"role": "system", "content": profile_block},
+            *history,
+        ]
+
+        try:
+            reply = call_groq_chat(messages, max_tokens=900, temperature=0.82)
+            return Response({"reply": reply})
+        except ValueError as e:
+            return Response({"error": str(e)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        except Exception as e:
+            return Response({"error": f"Unexpected error: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# ── Feature 5: Dynamic Roadmap Generator ─────────────────────────────────────
+
+ROADMAP_JSON_PROMPT = """Based on the following conversation with the user, generate a highly detailed and personalized learning roadmap for the career path they discussed.
+
+You MUST return STRICT JSON that exactly matches this structure:
+{
+  "id": "custom-roadmap",
+  "label": "Name of Career (e.g. AI Engineer)",
+  "description": "Short 1-sentence engaging description",
+  "icon": "bot",
+  "gradient": "linear-gradient(135deg, #10b981, #059669)",
+  "color": "#10b981",
+  "phases": [
+    {
+      "id": "phase-1",
+      "label": "Name of Phase (e.g. Fundamentals)",
+      "color": "#10b981",
+      "topics": [
+        {
+          "id": "topic-1",
+          "label": "Short Topic Name",
+          "description": "Short crisp description (max 10 words)",
+          "type": "core" | "optional" | "tool"
+        }
+      ]
+    }
+  ]
+}
+
+RULES:
+1. The 'icon' MUST be exactly one of: globe, server, bot, bar-chart, rocket, shield, link
+2. Generate EXACTLY 4 phases.
+3. Each phase should be color coded correctly (matching the parent color or a sensible progression).
+4. Each phase MUST have 4 to 6 topics.
+5. Topics must be highly specific to their exact goals and existing skills.
+6. ONLY output valid JSON. Do not output markdown code blocks. Start output with '{' and end with '}'.
+"""
+
+class GenerateRoadmapView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        history = request.data.get("messages", [])
+        
+        messages = [
+            {"role": "system", "content": ROADMAP_JSON_PROMPT},
+            {"role": "user", "content": "Here is our conversation history:\n" + str(history) + "\n\nGenerate the JSON roadmap now."}
+        ]
+
+        try:
+            # We use a lower temperature for structural tasks to ensure strict JSON
+            reply = call_groq_chat(messages, max_tokens=2000, temperature=0.3)
+            
+            # Clean up potential markdown formatting if the model disobeys
+            if reply.startswith("```json"):
+                reply = reply[7:]
+            if reply.startswith("```"):
+                reply = reply[3:]
+            if reply.endswith("```"):
+                reply = reply[:-3]
+                
+            reply = reply.strip()
+            
+            import json
+            data = json.loads(reply)
+            return Response(data)
+        except json.JSONDecodeError:
+            return Response({"error": "Failed to generate valid roadmap structure from AI. Please try again."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

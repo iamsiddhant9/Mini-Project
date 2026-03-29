@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, ReactElement } from "react";
+import { useNavigate } from "react-router-dom";
 import './Explore.css';
 import { useToast } from "../context/ToastContext";
-import { Search, X, MapPin, Clock, Heart, HeartOff, ChevronDown, AlertTriangle, Loader2, RefreshCw, Check } from "lucide-react";
+import { Search, X, MapPin, Clock, Heart, HeartOff, ChevronDown, AlertTriangle, Loader2, RefreshCw, Check, Bookmark } from "lucide-react";
 
 
 import * as apiSvc from "../services/api";
@@ -53,6 +54,7 @@ function ApplyModal({ internship, onConfirm, onCancel, applying }: ApplyModalPro
 }
 
 export default function Explore(): ReactElement {
+  const navigate = useNavigate();
   const [search, setSearch]           = useState("");
   const [category, setCategory]       = useState("All");
   const [mode, setMode]               = useState("All");
@@ -209,6 +211,20 @@ export default function Explore(): ReactElement {
           <p>{totalCount > 0 ? `${totalCount}+ opportunities` : "Browse opportunities"} across companies and roles</p>
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          {/* Saved shortcut */}
+          <button
+            onClick={() => navigate("/saved")}
+            style={{
+              display: "flex", alignItems: "center", gap: 6,
+              padding: "7px 14px", borderRadius: 8,
+              border: "1px solid rgba(251,191,36,0.25)",
+              background: "rgba(251,191,36,0.06)", color: "var(--gold)",
+              cursor: "pointer", fontSize: 12, fontWeight: 700,
+              fontFamily: "DM Sans, sans-serif",
+            }}
+          >
+            <Bookmark size={13} /> Saved
+          </button>
           {/* Sort */}
           <select
             value={sortBy}
