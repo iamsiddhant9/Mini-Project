@@ -480,7 +480,11 @@
 
 /* ── Mobile ─────────────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .coach-page { height: auto; min-height: calc(100vh - 80px); }
+  .coach-page { height: calc(100dvh - 90px); }
   .coach-bubble { max-width: 88%; }
   .coach-starters { max-width: 100%; }
+  
+  .coach-input-bar {
+    padding-bottom: 20px;
+  }
 }
