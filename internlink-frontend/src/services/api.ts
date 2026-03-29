@@ -1,16 +1,16 @@
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
 // ── Token Management ──────────────────────────────────────────────────────────
-export const getToken = () => localStorage.getItem("access_token");
-export const getRefreshToken = () => localStorage.getItem("refresh_token");
+export const getToken = () => sessionStorage.getItem("access_token");
+export const getRefreshToken = () => sessionStorage.getItem("refresh_token");
 export const setTokens = (access: string, refresh: string) => {
-  localStorage.setItem("access_token", access);
-  localStorage.setItem("refresh_token", refresh);
+  sessionStorage.setItem("access_token", access);
+  sessionStorage.setItem("refresh_token", refresh);
 };
 export const clearTokens = () => {
-  localStorage.removeItem("access_token");
-  localStorage.removeItem("refresh_token");
-  localStorage.removeItem("user");
+  sessionStorage.removeItem("access_token");
+  sessionStorage.removeItem("refresh_token");
+  sessionStorage.removeItem("user");
 };
 
 // ── Base Fetch ────────────────────────────────────────────────────────────────

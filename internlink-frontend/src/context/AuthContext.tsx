@@ -31,7 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const stored = localStorage.getItem("user");
+    const stored = sessionStorage.getItem("user");
     const token  = apiSvc.getToken();
 
     if (stored && token) {
@@ -48,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (res.error) throw new Error(res.error);
     apiSvc.setTokens(res.tokens.access, res.tokens.refresh);
 
-    localStorage.setItem("user", JSON.stringify(res.user));
+    sessionStorage.setItem("user", JSON.stringify(res.user));
     setUser(res.user);
     
     // Log explicit login event
@@ -69,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (res.error) throw new Error(res.error);
     apiSvc.setTokens(res.tokens.access, res.tokens.refresh);
 
-    localStorage.setItem("user", JSON.stringify(res.user));
+    sessionStorage.setItem("user", JSON.stringify(res.user));
     setUser(res.user);
     
     // Log explicit login event
@@ -87,7 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (res.error) throw new Error(res.error);
     apiSvc.setTokens(res.tokens.access, res.tokens.refresh);
 
-    localStorage.setItem("user", JSON.stringify(res.user));
+    sessionStorage.setItem("user", JSON.stringify(res.user));
     setUser(res.user);
   };
 
@@ -107,7 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(prev => {
       if (!prev) return prev;
       const updatedUser = { ...prev, ...updates };
-      localStorage.setItem("user", JSON.stringify(updatedUser));
+      sessionStorage.setItem("user", JSON.stringify(updatedUser));
       return updatedUser;
     });
   };
