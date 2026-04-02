@@ -9,7 +9,7 @@ import { useAuth } from "../context/AuthContext";
 const GOOGLE_CLIENT_ID = "201990083542-bh5213dhvhjqaq6kkiot1rcj15jv0q91.apps.googleusercontent.com";
 const MAX_SKILLS = 5;
 
-export default function Register() {
+export default function Register({ onRegisterSuccess }: { onRegisterSuccess?: () => void }) {
   const [skills, setSkills]         = useState<string[]>([]);
   const [skillInput, setSkillInput] = useState<string>("");
   const [skillError, setSkillError] = useState<string>("");
@@ -25,6 +25,17 @@ export default function Register() {
 
   const { register, googleLogin } = useAuth();
   const navigate                  = useNavigate();
+
+  const handleSuccess = (role: string) => {
+    if (role === "student") {
+      onRegisterSuccess?.();
+      setTimeout(() => navigate("/dashboard"), 100);
+    } else if (role === "admin") {
+      navigate("/admin");
+    } else {
+      navigate("/login"); // Recruiter goes to login for approval
+    }
+  };
 
   useEffect(() => {
     const existing = document.getElementById("gsi-script");
@@ -54,9 +65,7 @@ export default function Register() {
     setError("");
     try {
       const role = await googleLogin(response.credential);
-      if (role === "admin")          navigate("/admin");
-      else if (role === "recruiter") navigate("/recruiter");
-      else                           navigate("/dashboard");
+      handleSuccess(role as string);
     } catch (err: any) {
       setError(err.message || "Google sign-up failed");
     } finally {
@@ -85,8 +94,7 @@ export default function Register() {
     setLoading(true);
     try {
       await register({ name, email, password, university, year: year ? parseInt(year) : undefined, role });
-      if (role === "recruiter") navigate("/login");
-      else                      navigate("/dashboard");
+      handleSuccess(role);
     } catch (err: any) {
       setError(err.message || "Registration failed");
     } finally {

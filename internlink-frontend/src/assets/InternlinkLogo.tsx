@@ -3,7 +3,7 @@
 
 interface InternLinkLogoProps {
   size?: number;
-  variant?: "full" | "icon";
+  variant?: "full" | "icon" | "splash";
   theme?: "dark" | "light";
 }
 
@@ -72,15 +72,21 @@ export default function InternLinkLogo({
 
         {/* Left ring — silver */}
         <rect x="9" y="12" width="16" height="18" rx="4"
+          className={variant === "splash" ? "splash-ring-silver" : ""}
           fill="none" stroke="url(#il-silver)" strokeWidth="2.4" />
         {/* Erase right wall of left ring (open side faces right ring) */}
-        <rect x="21" y="16.5" width="5" height="9" fill="url(#il-bg)" />
+        <rect x="21" y="16.5" width="5" height="9" 
+          className={variant === "splash" ? "splash-erase" : ""}
+          fill="url(#il-bg)" />
 
         {/* Right ring — gold, shifted right + down */}
         <rect x="23" y="18" width="16" height="18" rx="4"
+          className={variant === "splash" ? "splash-ring-gold" : ""}
           fill="none" stroke="url(#il-gold)" strokeWidth="2.4" />
         {/* Erase left wall of right ring */}
-        <rect x="22" y="22.5" width="5" height="9" fill="url(#il-bg)" />
+        <rect x="22" y="22.5" width="5" height="9" 
+          className={variant === "splash" ? "splash-erase" : ""}
+          fill="url(#il-bg)" />
 
         {/* The overlap zone — clean cut */}
         <rect x="23" y="22.2" width="2.5" height="8.6" rx="0.5" fill="url(#il-bg)" />
@@ -95,8 +101,11 @@ export default function InternLinkLogo({
       </svg>
 
       {/* ── Wordmark ── */}
-      {variant === "full" && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 2, lineHeight: 1 }}>
+      {(variant === "full" || variant === "splash") && (
+        <div 
+          className={variant === "splash" ? "splash-wordmark" : ""}
+          style={{ display: "flex", flexDirection: "column", gap: 2, lineHeight: 1 }}
+        >
           {/* Main name */}
           <div
             style={{

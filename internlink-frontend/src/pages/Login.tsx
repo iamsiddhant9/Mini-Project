@@ -7,7 +7,7 @@ import { useAuth } from "../context/AuthContext";
 
 const GOOGLE_CLIENT_ID = "201990083542-bh5213dhvhjqaq6kkiot1rcj15jv0q91.apps.googleusercontent.com";
 
-export default function Login() {
+export default function Login({ onLoginSuccess }: { onLoginSuccess?: () => void }) {
   const [email, setEmail]       = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [error, setError]       = useState<string>("");
@@ -15,6 +15,17 @@ export default function Login() {
   const [gLoading, setGLoading] = useState<boolean>(false);
   const { login, googleLogin }  = useAuth();
   const navigate                = useNavigate();
+
+  const handleSuccess = (role: string) => {
+    if (role === "student") {
+      onLoginSuccess?.();
+      setTimeout(() => navigate("/dashboard"), 100); // Trigger splash, dashboard will show after 5s
+    } else if (role === "admin") {
+      navigate("/admin");
+    } else {
+      navigate("/recruiter");
+    }
+  };
 
   useEffect(() => {
     const existing = document.getElementById("gsi-script");
@@ -44,9 +55,7 @@ export default function Login() {
     setError("");
     try {
       const role = await googleLogin(response.credential);
-      if (role === "admin")          navigate("/admin");
-      else if (role === "recruiter") navigate("/recruiter");
-      else                           navigate("/dashboard");
+      handleSuccess(role);
     } catch (err: any) {
       setError(err.message || "Google sign-in failed");
     } finally {
@@ -60,9 +69,7 @@ export default function Login() {
     setLoading(true);
     try {
       const role = await login(email, password);
-      if (role === "admin")          navigate("/admin");
-      else if (role === "recruiter") navigate("/recruiter");
-      else                           navigate("/dashboard");
+      handleSuccess(role);
     } catch (err: any) {
       setError(err.message || "Invalid email or password");
     } finally {

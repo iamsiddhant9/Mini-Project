@@ -277,13 +277,14 @@
 .md-h2 {
   display: flex;
   align-items: center;
-  gap: 7px;
-  font-size: 14px;
+  gap: 8px;
+  font-size: 15px;
   font-weight: 800;
   color: var(--accent);
-  margin: 10px 0 4px;
-  padding-bottom: 4px;
-  border-bottom: 1px solid var(--border);
+  margin: 18px 0 8px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid rgba(59,130,246,0.15);
+  letter-spacing: -0.2px;
 }
 
 .md-h2-icon { flex-shrink: 0; }
@@ -298,14 +299,15 @@
 .md-bullet {
   display: flex;
   align-items: flex-start;
-  gap: 6px;
-  padding-left: 4px;
-  font-size: 13px;
+  gap: 10px;
+  padding-left: 2px;
+  font-size: 13.5px;
   color: var(--text);
-  line-height: 1.5;
+  line-height: 1.6;
+  margin-bottom: 6px;
 }
 
-.md-bullet-icon { color: var(--accent); margin-top: 3px; flex-shrink: 0; }
+.md-bullet-icon { color: var(--accent); margin-top: 4px; flex-shrink: 0; opacity: 0.8; }
 
 .md-numbered {
   display: flex;
@@ -391,8 +393,11 @@
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
-.md-para { font-size: 13px; color: var(--text); line-height: 1.55; }
-.md-spacer { height: 6px; }
+.md-para { font-size: 13.5px; color: var(--text); line-height: 1.6; margin-bottom: 4px; }
+.md-body strong { color: var(--accent); font-weight: 700; }
+.md-spacer { height: 10px; }
+
+/* Jarvis Match Cards Removed */
 
 /* ── Error Banner ───────────────────────────────────────────────────────────── */
 .coach-error-banner {

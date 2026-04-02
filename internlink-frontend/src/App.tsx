@@ -24,18 +24,28 @@ import AdminDashboard from "./pages/AdminDashboard";
 import Roadmap from "./pages/Roadmap";
 import CareerCoach from "./pages/CareerCoach";
 
+import SplashScreen from "./components/SplashScreen";
+import { useState } from "react";
+
 function App() {
+  const [showSplash, setShowSplash] = useState(false);
+
+  const triggerSplash = () => {
+    setShowSplash(true);
+  };
+
   return (
     <ToastProvider>
+      {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
       <HashRouter>
         <ServerStatus />
         <ActivityTracker />
         <Routes>
 
           {/* ── Public only (redirect if logged in) ── */}
-          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-          <Route path="/" element={<PublicRoute><Register /></PublicRoute>} />
-          <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+          <Route path="/login" element={<PublicRoute><Login onLoginSuccess={triggerSplash} /></PublicRoute>} />
+          <Route path="/" element={<PublicRoute><Register onRegisterSuccess={triggerSplash} /></PublicRoute>} />
+          <Route path="/register" element={<PublicRoute><Register onRegisterSuccess={triggerSplash} /></PublicRoute>} />
 
           {/* ── Recruiter only ── */}
           <Route path="/recruiter" element={

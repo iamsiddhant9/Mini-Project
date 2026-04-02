@@ -14,11 +14,11 @@ interface Message {
   content: string;
 }
 
-// ── Markdown-like renderer (bold, headers, bullets) ──────────────────────────
+// ── Markdown-like renderer (bold, headers, bullets, roadmaps, etc.) ────────────
 function RenderMarkdown({ 
   text, 
   onOptionClick,
-  onRoadmapClick 
+  onRoadmapClick
 }: { 
   text: string; 
   onOptionClick?: (text: string) => void;
@@ -67,6 +67,8 @@ function RenderMarkdown({
         </button>
       );
     }
+    // [MATCHES] Card logic was here - REMOVED
+
     // Bullet
     if (line.match(/^[-*•]\s/)) {
       return (
@@ -200,9 +202,9 @@ export default function CareerCoach(): ReactElement {
           </div>
           <div>
             <h1 className="coach-title">
-              Sid <span className="ai-badge-coach"><Sparkles size={11} /> AI Career Coach</span>
+              Jarvis <span className="ai-badge-coach"><Sparkles size={11} /> AI Career Coach</span>
             </h1>
-            <p className="coach-subtitle">Your personal guide to finding the perfect career path</p>
+            <p className="coach-subtitle">Your expert guide to an elite career path</p>
           </div>
         </div>
         {hasMessages && (
@@ -221,10 +223,10 @@ export default function CareerCoach(): ReactElement {
             <div className="coach-welcome-icon">
               <Bot size={36} />
             </div>
-            <h2 className="coach-welcome-title">Hi {firstName}! I'm Sid.</h2>
+            <h2 className="coach-welcome-title">Greetings {firstName}! I'm Jarvis.</h2>
             <p className="coach-welcome-sub">
-              I'm here to help you discover the career that truly fits <em>you</em>.<br />
-              No judgement, no pressure — just honest, friendly guidance.
+              I'm here to help you architect a career that matches your highest ambitions.<br />
+              Let's identify your strengths and map out your path to the top.
             </p>
 
             <div className="coach-starters">
@@ -298,7 +300,7 @@ export default function CareerCoach(): ReactElement {
           <textarea
             ref={inputRef}
             className="coach-textarea"
-            placeholder="Ask Sid anything about your career…  (Enter to send, Shift+Enter for new line)"
+            placeholder="Ask Jarvis anything about your career…  (Enter to send, Shift+Enter for new line)"
             value={input}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}

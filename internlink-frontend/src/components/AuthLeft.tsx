@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Pencil } from "lucide-react";
 
 
-const text = "Curated internships. Exceptional futures.Built to accelerate your career.Connecting students to internships that match their skills.";
+const text = "You bring the skills , we bring the opportunities";
 
 export default function AuthLeft() {
  const [displayText, setDisplayText] = useState("");
