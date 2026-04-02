@@ -15,7 +15,7 @@ export default function ServerStatus() {
   useEffect(() => {
     const doCheck = async () => {
       try {
-        const res = await fetch(HEALTH_URL, { signal: AbortSignal.timeout(30000) });
+        const res = await fetch(HEALTH_URL, { signal: AbortSignal.timeout(120000) });
         if (res.ok) {
           const elapsed = Date.now() - startRef.current;
           setStatus(elapsed > COLD_START_THRESHOLD_MS ? "cold_start" : "online");
