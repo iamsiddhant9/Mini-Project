@@ -29,21 +29,15 @@
 .splash-logo-wrap {
   transform-origin: center;
   animation: logoPulse 2s infinite alternate ease-in-out;
-  --logo-scale: 120px;
 }
 
 @media (max-width: 768px) {
   .splash-logo-wrap {
-    --logo-scale: 80px;
+    animation: logoPulseMobile 2s infinite alternate ease-in-out;
   }
   .splash-anim-container {
     gap: 24px;
   }
-}
-
-.splash-logo-wrap > div {
-  width: var(--logo-scale) !important;
-  height: var(--logo-scale) !important;
 }
 
 /* Logo Stroke Drawing */
@@ -88,6 +82,11 @@
 @keyframes logoPulse {
   from { transform: scale(1); filter: brightness(1); }
   to { transform: scale(1.02); filter: brightness(1.1); }
+}
+
+@keyframes logoPulseMobile {
+  from { transform: scale(0.65); filter: brightness(1); }
+  to { transform: scale(0.67); filter: brightness(1.1); }
 }
 
 /* ── Loading Bar ── */
