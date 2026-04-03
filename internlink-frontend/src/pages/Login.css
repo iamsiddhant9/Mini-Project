@@ -101,18 +101,18 @@ html, body, #root {
 .brand-title {
   font-family: 'Syne', sans-serif;
   font-weight: 800;
-  font-size: 50px;
-  margin-bottom: 0.75rem;
+  font-size: clamp(32px, 4.5vw, 42px);
+  margin-bottom: 0.25rem;
   background: linear-gradient(135deg, #fff 40%, #06b6d4);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  line-height: 1.1;
 }
 
 .brand-text {
-  font-family: 'DM Sans', sans-serif;
   font-weight: 400;
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   color: #b8bbc0;
   line-height: 1.5;
 }
