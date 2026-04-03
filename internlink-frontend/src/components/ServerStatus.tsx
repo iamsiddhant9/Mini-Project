@@ -87,9 +87,14 @@ export default function ServerStatus() {
 
   // Checking / cold-starting
   return (
-    <div style={{ ...styles.bar, background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.25)", color: "#fbbf24" }}>
-      <span style={{ display: "inline-block", animation: "spin 1s linear infinite", fontSize: 15 }}>⚙️</span>
-      Waking up server… {seconds}s
+    <div style={{ ...styles.bar, background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.25)", color: "#fbbf24", flexDirection: "column", alignItems: "center", gap: 4 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <span style={{ display: "inline-block", animation: "spin 1s linear infinite", fontSize: 15 }}>⚙️</span>
+        <span>Waking up server… {seconds}s</span>
+      </div>
+      <div style={{ fontSize: 11, color: "rgba(251,191,36,0.8)", fontWeight: 500 }}>
+        Please allow up to 59s. Thank you for your patience!
+      </div>
     </div>
   );
 }

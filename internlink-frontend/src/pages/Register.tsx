@@ -116,12 +116,6 @@ export default function Register({ onRegisterSuccess }: { onRegisterSuccess?: ()
             <div className="login-card register-card">
               <h2>Create Account</h2>
 
-              <div style={{ background: "rgba(59, 130, 246, 0.08)", border: "1px solid rgba(59, 130, 246, 0.2)", borderRadius: 10, padding: "12px 14px", marginBottom: 20, fontSize: 13, color: "#93c5fd", display: "flex", gap: 8, alignItems: "flex-start", lineHeight: 1.4 }}>
-                <div>
-                  <strong>Server may be asleep:</strong> Please allow up to 59 seconds for your registration to complete. Thank you for your patience!
-                </div>
-              </div>
-
               {/* ── Role Toggle ── */}
               <div style={{ display: "flex", gap: 8, marginBottom: 16, background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: 4 }}>
                 {["student", "recruiter"].map((r) => (

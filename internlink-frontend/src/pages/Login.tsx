@@ -91,12 +91,6 @@ export default function Login({ onLoginSuccess }: { onLoginSuccess?: () => void 
             <div className="login-card">
               <h2>Login</h2>
 
-              <div style={{ background: "rgba(59, 130, 246, 0.08)", border: "1px solid rgba(59, 130, 246, 0.2)", borderRadius: 10, padding: "12px 14px", marginBottom: 20, fontSize: 13, color: "#93c5fd", display: "flex", gap: 8, alignItems: "flex-start", lineHeight: 1.4 }}>
-                <div>
-                  <strong>Server may be asleep:</strong> Please allow up to 59 seconds for the first login request to complete. Thank you for your patience!
-                </div>
-              </div>
-
               {/* ── Google button ── */}
               <div id="google-btn-login" style={{ width: "100%", marginBottom: 4 }} />
               {gLoading && <p style={{ textAlign: "center", fontSize: 12, color: "#94a3b8", margin: "4px 0 8px" }}>Signing in with Google…</p>}
