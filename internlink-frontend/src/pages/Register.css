@@ -91,9 +91,9 @@
   pointer-events: none;
 }
 
-.auth-left h1 {
-  font-family: "Mea Culpa", cursive;
-  font-weight: 400;
+.brand-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
   font-size: 50px;
   margin-bottom: 0.75rem;
   background: linear-gradient(135deg, #fff 40%, #06b6d4);
@@ -103,10 +103,11 @@
 }
 
 .brand-text {
-  font-family: "Mea Culpa", cursive;
+  font-family: 'DM Sans', sans-serif;
   font-weight: 400;
-  font-size: xx-large;
+  font-size: 1.15rem;
   color: #d9dbdd;
+  line-height: 1.5;
 }
 
 /* ── Right panel ── */
