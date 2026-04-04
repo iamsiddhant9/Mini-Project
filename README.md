@@ -1,4 +1,4 @@
-# 🔗 InternLink
+ InternLink
 
 > **An AI-powered internship discovery & career development platform for students.**
 
@@ -6,34 +6,34 @@ InternLink is a full-stack web application that helps students find internships,
 
 ---
 
-## ✨ Features
+ Features
 
-### 👩‍🎓 For Students
+### For Students
 | Feature | Description |
 |---|---|
-| 🔍 **Explore & Discover** | Browse internships from live job feeds and saved listings |
-| 🤖 **AI Match Score** | LLaMA-3.3-powered compatibility score for each internship |
-| 📋 **Application Tracker** | Track applied, saved, and in-progress applications |
-| 📊 **Analytics Dashboard** | Visual insights into your application activity |
-| 🧠 **Skill Gap Detector** | AI identifies missing skills vs. current market demand |
-| 🗺️ **Career Roadmap** | Dynamic AI-generated learning roadmaps based on career goals |
-| 💬 **AI Career Coach (Jarvis)** | Multi-turn AI chat counselor with personalized career advice |
-| 📄 **AI Resume Builder** | Generate a professional resume from your profile with one click |
-| 💾 **Saved Listings** | Bookmark internships for later |
-| 📚 **Resources** | Curated preparation content |
-| ⚙️ **Profile & Settings** | Manage skills, bio, social links, and preferences |
+|  **Explore & Discover** | Browse internships from live job feeds and saved listings |
+|  **AI Match Score** | LLaMA-3.3-powered compatibility score for each internship |
+|  **Application Tracker** | Track applied, saved, and in-progress applications |
+|  **Analytics Dashboard** | Visual insights into your application activity |
+|  **Skill Gap Detector** | AI identifies missing skills vs. current market demand |
+|  **Career Roadmap** | Dynamic AI-generated learning roadmaps based on career goals |
+|  **AI Career Coach (Jarvis)** | Multi-turn AI chat counselor with personalized career advice |
+|  **AI Resume Builder** | Generate a professional resume from your profile with one click |
+|  **Saved Listings** | Bookmark internships for later |
+|  **Resources** | Curated preparation content |
+|  **Profile & Settings** | Manage skills, bio, social links, and preferences |
 
-### 🏢 For Recruiters
+###  For Recruiters
 - Post and manage internship listings
 - View applicant pools
 
-### 🛡️ For Admins
+###  For Admins
 - Full platform admin dashboard
 - User and listing management
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 ### Frontend
 | Layer | Technology |
@@ -67,7 +67,7 @@ InternLink is a full-stack web application that helps students find internships,
 
 ---
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 - **Node.js** ≥ 18
@@ -179,7 +179,7 @@ The app will be available at `http://localhost:5173`.
 
 ---
 
-## 🤖 AI Features — How They Work
+##  AI Features — How They Work
 
 All AI features are powered by **Groq's free tier API** running `llama-3.3-70b-versatile` — no billing required (14,400 requests/day).
 
