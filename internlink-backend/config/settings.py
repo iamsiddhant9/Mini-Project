@@ -70,7 +70,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 # ── Database ──────────────────────────────────────────────────────────────────
-if config("DATABASE_URL", default=""):
+if config("DATABASE_URL", default="") and not DEBUG:
     DATABASES = {
         "default": dj_database_url.config(
             default=config("DATABASE_URL"),
