@@ -13,12 +13,7 @@ const DEFAULT_EXP:  Entry[] = [{ id: 1, title: "", sub: "", date: "", desc: "" }
 const DEFAULT_PROJ: Entry[] = [{ id: 1, title: "", sub: "", date: "", desc: "" }];
 const DEFAULT_EDU:  Entry[] = [{ id: 1, title: "", sub: "", date: "", desc: "" }];
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CRITICAL: Field, EntryCard, and Section are defined OUTSIDE the parent
-// component. If they were inside, React would treat them as new component
-// types on every re-render, causing unmount→remount of every input, which
-// resets focus and scrolls the page to the top on every keystroke.
-// ─────────────────────────────────────────────────────────────────────────────
+
 
 const Field = memo(function Field({ label, value, onChange }: {
   label: string; value: string; onChange: (v: string) => void;

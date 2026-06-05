@@ -1,4 +1,20 @@
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+const ROOT_URL = BASE_URL.replace(/\/api$/, "");
+
+// ── Wake-up utility for Render free-tier cold starts ─────────────────────────
+// Render spins down after 15 min idle. Pinging /api/health/ first wakes it up
+// before making real requests, avoiding the misleading CORS error.
+export async function wakeUpBackend(timeoutMs = 30000): Promise<boolean> {
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    const res = await fetch(`${ROOT_URL}/api/health/`, { signal: controller.signal });
+    clearTimeout(timer);
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
 
 // ── Token Management ──────────────────────────────────────────────────────────
 export const getToken = () => sessionStorage.getItem("access_token");
@@ -224,5 +240,9 @@ export const admin = {
 
 // ── Jobs ──────────────────────────────────────────────────────────────────────
 export const jobs = {
-  fetchAll: () => request("/jobs/fetch-all/", { method: "POST", body: JSON.stringify({}) }),
+  // Wake the Render server first (handles cold-start / spin-down), then fetch
+  fetchAll: async () => {
+    await wakeUpBackend(45000); // wait up to 45s for server to wake
+    return request("/jobs/fetch-all/", { method: "POST", body: JSON.stringify({}) });
+  },
 };
