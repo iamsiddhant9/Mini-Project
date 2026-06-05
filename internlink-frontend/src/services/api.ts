@@ -240,9 +240,9 @@ export const admin = {
 
 // ── Jobs ──────────────────────────────────────────────────────────────────────
 export const jobs = {
-  // Wake the Render server first (handles cold-start / spin-down), then fetch
-  fetchAll: async () => {
-    await wakeUpBackend(45000); // wait up to 45s for server to wake
-    return request("/jobs/fetch-all/", { method: "POST", body: JSON.stringify({}) });
-  },
+  /** POST — kicks off background fetch, resolves immediately with 202 */
+  fetchAll: () => request("/jobs/fetch-all/", { method: "POST", body: JSON.stringify({}) }),
+
+  /** GET — poll current background fetch status */
+  pollFetchStatus: () => request("/jobs/fetch-all/"),
 };

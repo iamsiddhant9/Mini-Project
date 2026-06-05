@@ -1,3 +1,4 @@
+import threading
 import requests
 from django.db import connection
 from django.conf import settings
@@ -5,6 +6,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from users.auth import CustomJWTAuthentication
+
+# Shared status dict so the frontend can poll for progress
+_fetch_status: dict = {"running": False, "saved": 0, "done": False, "error": None}
 
 
 def is_admin(request):
@@ -128,31 +132,29 @@ class FetchAdzunaJobsView(APIView):
         })
 
 
-class AdzunaKeywordsView(APIView):
-    authentication_classes = [CustomJWTAuthentication]
-    permission_classes     = [IsAuthenticated]
+def _run_adzuna_fetch():
+    """Runs in a background daemon thread — fetches all keyword sets from Adzuna."""
+    global _fetch_status
+    _fetch_status = {"running": True, "saved": 0, "done": False, "error": None}
 
-    def post(self, request):
-        if not is_admin(request):
-            return Response({"error": "Admin access required"}, status=403)
+    keywords_list = [
+        "software engineering intern",
+        "frontend developer intern",
+        "backend developer intern",
+        "data science intern",
+        "machine learning intern",
+        "cloud intern",
+        "mobile developer intern",
+        "cybersecurity intern",
+    ]
 
-        keywords_list = [
-            "software engineering intern",
-            "frontend developer intern",
-            "backend developer intern",
-            "data science intern",
-            "machine learning intern",
-            "cloud intern",
-            "mobile developer intern",
-            "cybersecurity intern",
-        ]
+    total_saved = 0
+    app_id  = settings.ADZUNA_APP_ID
+    app_key = settings.ADZUNA_APP_KEY
 
-        total_saved = 0
-        app_id  = settings.ADZUNA_APP_ID
-        app_key = settings.ADZUNA_APP_KEY
-
+    try:
         for keywords in keywords_list:
-            url = f"https://api.adzuna.com/v1/api/jobs/in/search/1"
+            url = "https://api.adzuna.com/v1/api/jobs/in/search/1"
             params = {
                 "app_id":           app_id,
                 "app_key":          app_key,
@@ -160,7 +162,10 @@ class AdzunaKeywordsView(APIView):
                 "results_per_page": 50,
                 "content-type":     "application/json",
             }
-            res = requests.get(url, params=params, timeout=10)
+            try:
+                res = requests.get(url, params=params, timeout=10)
+            except Exception:
+                continue
             if res.status_code != 200:
                 continue
 
@@ -185,19 +190,19 @@ class AdzunaKeywordsView(APIView):
                 else:
                     mode = "On-site"
 
-                if any(w in title_lower for w in ["ml","machine learning","ai","data science"]):
+                if any(w in title_lower for w in ["ml", "machine learning", "ai", "data science"]):
                     category = "AI/ML"
-                elif any(w in title_lower for w in ["frontend","react","vue","angular"]):
+                elif any(w in title_lower for w in ["frontend", "react", "vue", "angular"]):
                     category = "Frontend"
-                elif any(w in title_lower for w in ["backend","django","node","api"]):
+                elif any(w in title_lower for w in ["backend", "django", "node", "api"]):
                     category = "Backend"
-                elif any(w in title_lower for w in ["cloud","aws","azure","devops"]):
+                elif any(w in title_lower for w in ["cloud", "aws", "azure", "devops"]):
                     category = "Cloud"
-                elif any(w in title_lower for w in ["mobile","android","ios","flutter"]):
+                elif any(w in title_lower for w in ["mobile", "android", "ios", "flutter"]):
                     category = "Mobile"
-                elif any(w in title_lower for w in ["security","cyber"]):
+                elif any(w in title_lower for w in ["security", "cyber"]):
                     category = "Security"
-                elif any(w in title_lower for w in ["data","analyst","analytics"]):
+                elif any(w in title_lower for w in ["data", "analyst", "analytics"]):
                     category = "Data"
                 else:
                     category = "Other"
@@ -212,29 +217,74 @@ class AdzunaKeywordsView(APIView):
                     stipend     = "Competitive"
                     stipend_num = 0
 
-                with connection.cursor() as cur:
-                    cur.execute("SELECT id FROM companies WHERE LOWER(name) = LOWER(%s)", [company])
-                    comp = cur.fetchone()
-                    if not comp:
-                        cur.execute("INSERT INTO companies (name) VALUES (%s) RETURNING id", [company])
-                        comp = cur.fetchone()
-                    company_id = comp[0]
-
-                    cur.execute("""
-                        INSERT INTO internships (
-                            company_id, title, description, location, mode,
-                            category, stipend, stipend_num, source, source_id, apply_url
+                try:
+                    with connection.cursor() as cur:
+                        cur.execute(
+                            "SELECT id FROM companies WHERE LOWER(name) = LOWER(%s)", [company]
                         )
-                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,'adzuna',%s,%s)
-                        ON CONFLICT (source, source_id) DO NOTHING
-                    """, [
-                        company_id, title, description, location, mode,
-                        category, stipend, stipend_num, source_id, url_link
-                    ])
-                    if cur.rowcount > 0:
-                        total_saved += 1
+                        comp = cur.fetchone()
+                        if not comp:
+                            cur.execute(
+                                "INSERT INTO companies (name) VALUES (%s) RETURNING id", [company]
+                            )
+                            comp = cur.fetchone()
+                        company_id = comp[0]
 
-        return Response({
-            "message": f"Bulk fetch complete — {total_saved} new internships saved",
-            "saved":   total_saved,
-        })
+                        cur.execute(
+                            """
+                            INSERT INTO internships (
+                                company_id, title, description, location, mode,
+                                category, stipend, stipend_num, source, source_id, apply_url
+                            )
+                            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,'adzuna',%s,%s)
+                            ON CONFLICT (source, source_id) DO NOTHING
+                            """,
+                            [
+                                company_id, title, description, location, mode,
+                                category, stipend, stipend_num, source_id, url_link,
+                            ],
+                        )
+                        if cur.rowcount > 0:
+                            total_saved += 1
+                            _fetch_status["saved"] = total_saved
+                except Exception:
+                    continue
+
+        _fetch_status.update({"running": False, "done": True, "saved": total_saved, "error": None})
+
+    except Exception as exc:
+        _fetch_status.update({"running": False, "done": True, "error": str(exc)})
+
+
+class AdzunaKeywordsView(APIView):
+    """
+    POST  /api/jobs/fetch-all/  — kick off a background fetch, returns 202 immediately.
+    GET   /api/jobs/fetch-all/  — poll the current fetch status.
+    """
+    authentication_classes = [CustomJWTAuthentication]
+    permission_classes     = [IsAuthenticated]
+
+    def get(self, request):
+        """Poll endpoint — returns current background fetch status."""
+        if not is_admin(request):
+            return Response({"error": "Admin access required"}, status=403)
+        return Response(_fetch_status)
+
+    def post(self, request):
+        """Kick off the background fetch and return 202 immediately."""
+        if not is_admin(request):
+            return Response({"error": "Admin access required"}, status=403)
+
+        if _fetch_status.get("running"):
+            return Response(
+                {"message": "Fetch already in progress", "status": _fetch_status},
+                status=202,
+            )
+
+        thread = threading.Thread(target=_run_adzuna_fetch, daemon=True)
+        thread.start()
+
+        return Response(
+            {"message": "Fetch started in background. Poll GET /api/jobs/fetch-all/ for status."},
+            status=202,
+        )

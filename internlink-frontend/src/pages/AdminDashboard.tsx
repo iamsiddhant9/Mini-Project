@@ -277,8 +277,9 @@ export default function AdminDashboard() {
   const [search, setSearch]           = useState("");
   const [roleFilter, setRoleFilter]   = useState("");
 
-  const [fetching,  setFetching]  = useState(false);
-  const [fetchMsg,  setFetchMsg]  = useState("");
+  const [fetching,    setFetching]    = useState(false);
+  const [fetchMsg,    setFetchMsg]    = useState("");
+  const [fetchSaved,  setFetchSaved]  = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Detail drawer
@@ -314,11 +315,28 @@ export default function AdminDashboard() {
   const fetchJobs = async () => {
     setFetching(true);
     setFetchMsg("");
-    const res = await apiSvc.jobs.fetchAll();
-    setFetching(false);
-    setFetchMsg(res.message || "Done");
-    apiSvc.admin.getStats().then(setStats);
-    setTimeout(() => setFetchMsg(""), 5000);
+    setFetchSaved(0);
+
+    // Kick off background fetch — returns 202 immediately, no timeout
+    await apiSvc.jobs.fetchAll();
+
+    // Poll every 2 s until the background thread finishes
+    const poll = setInterval(async () => {
+      const status = await apiSvc.jobs.pollFetchStatus();
+      if (status?.saved !== undefined) setFetchSaved(status.saved);
+      if (status?.done || status?.error) {
+        clearInterval(poll);
+        setFetching(false);
+        setFetchSaved(0);
+        if (status.error) {
+          setFetchMsg(`Error: ${status.error}`);
+        } else {
+          setFetchMsg(`✓ ${status.saved} new internships saved`);
+          apiSvc.admin.getStats().then(setStats);
+        }
+        setTimeout(() => setFetchMsg(""), 6000);
+      }
+    }, 2000);
   };
 
 
@@ -430,9 +448,19 @@ export default function AdminDashboard() {
                   display: "flex", alignItems: "center", gap: 8,
                 }}>
                   <RefreshCw size={14} style={fetching ? { animation: "spin 1s linear infinite" } : {}} />
-                  {fetching ? "Fetching Jobs..." : "Fetch Internships from Adzuna"}
+                  {fetching
+                    ? fetchSaved > 0 ? `Fetching… ${fetchSaved} saved so far` : "Starting fetch…"
+                    : "Fetch Internships from Adzuna"}
                 </button>
-                {fetchMsg && <span style={{ fontSize: 13, color: "#10b981", display: "flex", alignItems: "center", gap: 4 }}><CheckCircle size={13} /> {fetchMsg}</span>}
+                {fetchMsg && (
+                  <span style={{
+                    fontSize: 13,
+                    color: fetchMsg.startsWith("Error") ? "#ef4444" : "#10b981",
+                    display: "flex", alignItems: "center", gap: 4,
+                  }}>
+                    <CheckCircle size={13} /> {fetchMsg}
+                  </span>
+                )}
               </div>
             </div>
           </div>
